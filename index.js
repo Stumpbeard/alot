@@ -1,6 +1,7 @@
 // Constants
-const HEIGHT = 144
+const HEIGHT = 240
 const WIDTH = 256
+const SCALE = 4
 
 // Main function
 let main = (timestamp) => {
@@ -45,6 +46,11 @@ let alotFactory = (scene) => {
 
 // Systems
 let RenderSystem = (scene) => {
+    if (document.body.clientHeight >= document.body.clientWidth) {
+        scene.canvas.style = `width: ${WIDTH * SCALE}px; max-width: 100%;`
+    } else {
+        scene.canvas.style = `height: ${HEIGHT * SCALE}px; max-height: 100%;`
+    }
     scene.context.clearRect(0, 0, scene.canvas.width, scene.canvas.height)
 
     let drawQueue = []
@@ -65,8 +71,6 @@ class RanchScene {
         this.world = new Registry();
         this.x = 0
         this.y = 0
-        this.w = 512
-        this.h = 288
         this.mousedown = false
         this.clicked = {
             x: 0,
@@ -76,6 +80,8 @@ class RanchScene {
         this.canvas.id = 'main-viewport'
         this.canvas.height = HEIGHT
         this.canvas.width = WIDTH
+        this.w = WIDTH * 2
+        this.h = HEIGHT * 2
         document.body.appendChild(this.canvas)
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
@@ -102,19 +108,18 @@ class RanchScene {
         })
 
         document.addEventListener('mouseup', (ev) => {
-            console.log(ev.type, ev.offsetX, ev.offsetY)
             this.mousedown = false
         })
 
         document.addEventListener('mousemove', (ev) => {
             if (this.mousedown) {
-                this.x += this.clicked.x - ev.x
+                this.x += Math.floor((this.clicked.x - ev.x) / SCALE)
                 if (this.x < 0) {
                     this.x = 0
                 } else if (this.x >= this.w - WIDTH) {
                     this.x = this.w - WIDTH
                 }
-                this.y += this.clicked.y - ev.y
+                this.y += Math.floor((this.clicked.y - ev.y) / SCALE)
                 if (this.y < 0) {
                     this.y = 0
                 } else if (this.y >= this.h - HEIGHT) {
