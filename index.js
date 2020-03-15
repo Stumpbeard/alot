@@ -77,6 +77,13 @@ let State = new Component()
 let Anchor = new Component()
 let Bonus = new Component()
 
+let components = [Position, Sprite, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus]
+let removeEntity = (ent) => {
+    components.forEach(component => {
+        component.delete(ent)
+    });
+}
+
 let position = (entity, x, y) => {
     Position.set(entity, { x: x, y: y })
 }
@@ -119,8 +126,8 @@ let anchor = (entity, x, y) => {
     Anchor.set(entity, { x: x, y: y })
 }
 
-let bonus = (entity) => {
-    Bonus.set(entity, {})
+let bonus = (entity, status, attributes) => {
+    Bonus.set(entity, { status: status, attributes: attributes })
 }
 
 // Entity factories
@@ -183,7 +190,7 @@ let alotFactory = (scene) => {
     scene.world.add(ent)
 }
 
-let itemFactory = (scene, graphic, x, y) => {
+let itemFactory = (scene, graphic, x, y, bonuses) => {
     let ent = Entity()
 
     let handler = (queue) => {
@@ -191,6 +198,7 @@ let itemFactory = (scene, graphic, x, y) => {
         let anchor = Anchor.get(ent)
         let handler = InputHandler.get(ent)
         let state = State.get(ent)
+        let bonus = Bonus.get(ent)
 
         if (state.hidden) return
 
@@ -208,6 +216,37 @@ let itemFactory = (scene, graphic, x, y) => {
                     }
                     break
                 case 'mouseup':
+                    if (state.clicked) {
+                        targetToBonus = undefined
+                        targetY = -1
+                        scene.world.forEach(ent => {
+                            let entPosition = Position.get(ent)
+                            let entAttributes = Attributes.get(ent)
+                            let entStatus = Status.get(ent)
+                            if (!entPosition || !entAttributes || !entStatus) return
+                            if (mousePos.x >= entPosition.x && mousePos.x < entPosition.x + 32 && mousePos.y >= entPosition.y && mousePos.y < entPosition.y + 32) {
+                                if (entPosition.y > targetY) {
+                                    targetY = entPosition.y
+                                    targetToBonus = { attributes: entAttributes, status: entStatus }
+                                }
+                            }
+                        });
+                        if (targetToBonus) {
+                            if (bonus.attributes) {
+                                for (const key in bonus.attributes) {
+                                    if (bonus.attributes.hasOwnProperty(key)) {
+                                        const bonusAttribute = bonus.attributes[key];
+                                        targetToBonus.attributes[key].bonus += bonusAttribute
+                                    }
+                                }
+                            }
+                            if (bonus.status) {
+                                targetToBonus.status.status.concat(bonus.status)
+                            }
+                            removeEntity(ent)
+                            return
+                        }
+                    }
                     state.clicked = false
                     for (let i = 0; i < ITEM_BOXES.length; ++i) {
                         let box = ITEM_BOXES[i]
@@ -233,8 +272,24 @@ let itemFactory = (scene, graphic, x, y) => {
     state(ent)
     image(ent, graphic)
     anchor(ent, x, y)
-    bonus(ent)
+    bonus(ent, bonuses.status, bonuses.attributes)
     scene.world.add(ent)
+}
+
+let pineappleFactory = (scene, x, y) => {
+    const bonus = {
+        attributes: {
+            spunk: 2
+        }
+    }
+    itemFactory(scene, 'foodPineapple', x, y, bonus)
+}
+
+let eggplantFactory = (scene, x, y) => {
+    const bonus = {
+        status: ['horny']
+    }
+    itemFactory(scene, 'foodEggplant', x, y, bonus)
 }
 
 let playerFactory = (scene) => {
@@ -413,9 +468,11 @@ class RanchScene {
         for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
-        itemFactory(this, 'foodEggplant', ITEM_BOXES[0].x, ITEM_BOXES[0].y)
-        itemFactory(this, 'foodEggplant', ITEM_BOXES[2].x, ITEM_BOXES[2].y)
-        itemFactory(this, 'foodPineapple', ITEM_BOXES[1].x, ITEM_BOXES[1].y)
+        eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
+        eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
+        pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
+        pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
+        pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
         playerFactory(this)
         this.setupControls()
     }
@@ -436,6 +493,8 @@ class RanchScene {
             this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
             this.context.fillStyle = 'blue'
             this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
+            this.context.fillStyle = 'pink'
+            this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
             this.context.fillStyle = 'purple'
             this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
         }
@@ -501,6 +560,8 @@ class RanchScene {
 
         document.addEventListener('mouseup', (ev) => {
             if (ev.which !== 1) return
+            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
+            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
             this.eventQueue.push(ev)
         })
 
