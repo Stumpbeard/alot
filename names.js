@@ -15,5 +15,9 @@ const NAMES = [
     'HOMEY',
     'JULES',
     'SIMON',
-    'WEDNES'
+    'WEDNES',
+    'BAKE',
+    'HILM',
+    'SUG',
+    'KIPS'
 ]
