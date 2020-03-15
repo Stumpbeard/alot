@@ -56,6 +56,14 @@ let bgRanchImage = new Image()
 bgRanchImage.src = 'images/ranch-bg-cropped.png'
 images['bgRanch'] = bgRanchImage
 
+let buttonGoImage = new Image()
+buttonGoImage.src = 'images/button-go.png'
+images['buttonGo'] = buttonGoImage
+
+let buttonXImage = new Image()
+buttonXImage.src = 'images/button-x.png'
+images['buttonX'] = buttonXImage
+
 
 // Components
 let Position = new Component()
@@ -67,6 +75,7 @@ let ParentScene = new Component()
 let InputHandler = new Component()
 let State = new Component()
 let Anchor = new Component()
+let Bonus = new Component()
 
 let position = (entity, x, y) => {
     Position.set(entity, { x: x, y: y })
@@ -97,11 +106,15 @@ let inputHandler = (entity, handler) => {
 }
 
 let state = (entity) => {
-    State.set(entity, { hovered: false, clicked: false })
+    State.set(entity, { hovered: false, clicked: false, hidden: false })
 }
 
 let anchor = (entity, x, y) => {
     Anchor.set(entity, { x: x, y: y })
+}
+
+let bonus = (entity) => {
+    Bonus.set(entity, {})
 }
 
 // Entity factories
@@ -173,6 +186,8 @@ let itemFactory = (scene, graphic, x, y) => {
         let handler = InputHandler.get(ent)
         let state = State.get(ent)
 
+        if (state.hidden) return
+
         queue.forEach(ev => {
             let mousePos = {
                 x: Math.floor(ev.localX),
@@ -212,6 +227,7 @@ let itemFactory = (scene, graphic, x, y) => {
     state(ent)
     image(ent, graphic)
     anchor(ent, x, y)
+    bonus(ent)
     scene.world.add(ent)
 }
 
@@ -222,7 +238,40 @@ let playerFactory = (scene) => {
         let handler = InputHandler.get(ent)
 
         queue.forEach(ev => {
+            let mousePos = {
+                x: Math.floor(ev.localX),
+                y: Math.floor(ev.localY)
+            }
             switch (ev.type) {
+                case 'click':
+                    for (const key in scene.buttons) {
+                        if (scene.buttons.hasOwnProperty(key)) {
+                            const button = scene.buttons[key];
+                            if (mousePos.x >= button.x && mousePos.x < button.x + button.w && mousePos.y >= button.y && mousePos.y < button.y + button.h) {
+                                scene.menuState = button.state
+                                scene.world.forEach(ent => {
+                                    let state = State.get(ent)
+                                    let bonus = Bonus.get(ent)
+                                    if (state && bonus) {
+                                        state.hidden = !button.showItems
+                                    }
+                                });
+                            }
+
+                        }
+                    }
+                    let button = scene.buttons.dig
+                    if (mousePos.x >= button.x && mousePos.x < button.x + button.w && mousePos.y >= button.y && mousePos.y < button.y + button.h) {
+                        scene.menuState = 'dig'
+                        scene.world.forEach(ent => {
+                            let state = State.get(ent)
+                            let bonus = Bonus.get(ent)
+                            if (state && bonus) {
+                                state.hidden = true
+                            }
+                        });
+                    }
+                    break
                 case 'mousedown':
                     handler.keydown.mouse1 = true
                     break
@@ -230,10 +279,6 @@ let playerFactory = (scene) => {
                     handler.keydown.mouse1 = false
                     break
                 case 'mousemove':
-                    let mousePos = {
-                        x: Math.floor(ev.localX),
-                        y: Math.floor(ev.localY)
-                    }
                     handler.mousePos = mousePos
                     scene.currentAlot = {
                         name: ''
@@ -276,6 +321,8 @@ let RenderSystem = (scene) => {
         let position = Position.get(entity)
         let sprite = Sprite.get(entity)
         if (!position || !sprite) return
+        let state = State.get(entity)
+        if (state && state.hidden) return
         drawQueue.push({ sprite: sprite, position: position })
     });
     drawQueue.sort((a, b) => a.position.y - b.position.y)
@@ -292,7 +339,8 @@ let RenderSystem = (scene) => {
 let AISystem = (scene) => {
     scene.world.forEach(entity => {
         let ai = AI.get(entity)
-        if (!ai) return
+        let state = State.get(entity)
+        if (!ai || (state && state.hidden)) return
         ai.ai(entity)
     });
 }
@@ -328,6 +376,7 @@ class RanchScene {
             focus: 0,
             spunk: 0
         }
+        this.menuState = 'default'
         this.canvas = document.createElement('canvas', { alpha: false })
         this.eventQueue = []
         this.canvas.id = 'main-viewport'
@@ -338,6 +387,40 @@ class RanchScene {
         document.body.appendChild(this.canvas)
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
+        this.buttons = {
+            dig: {
+                x: 196,
+                y: 120,
+                w: 56,
+                h: 8,
+                state: 'dig',
+                showItems: 'false'
+            },
+            race: {
+                x: 196,
+                y: 130,
+                w: 56,
+                h: 8,
+                state: 'race',
+                showItems: 'false'
+            },
+            x: {
+                x: 215,
+                y: 182,
+                w: 8,
+                h: 8,
+                state: 'default',
+                showItems: 'true'
+            },
+            go: {
+                x: 225,
+                y: 182,
+                w: 8,
+                h: 8,
+                state: 'default',
+                showItems: 'true'
+            },
+        }
 
         bgRanchFacotry(this)
         for (let i = 0; i < 3; ++i) {
@@ -369,9 +452,33 @@ class RanchScene {
 
         this.context.fillStyle = 'white'
         this.context.fillRect(196, 112, 56, 2)
+
+        this.context.fillRect(196, 120, 2, 8)
+        this.context.fillRect(250, 120, 2, 8)
+        this.context.fillRect(196, 130, 2, 8)
+        this.context.fillRect(250, 130, 2, 8)
+        if (this.menuState === 'default') {
+            this.context.fillStyle = 'black'
+            this.context.fillRect(197, 121, 54, 6)
+            this.context.fillRect(197, 131, 54, 6)
+        } else if (this.menuState === 'dig') {
+            this.context.fillStyle = 'white'
+            this.context.fillRect(196, 120, 12, 8)
+            this.context.fillRect(240, 120, 12, 8)
+            this.context.fillStyle = 'black'
+            this.context.fillRect(197, 131, 54, 6)
+            this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
+            this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
+        }
+        drawWhiteText(this.context, 'DIG', 212, 120)
+        drawWhiteText(this.context, 'RACE', 208, 130)
+
+
         let x = 208
         let y = 144
-        for (let i = 0; i < 10; ++i) {
+        let numBoxes = 10
+        if (this.menuState === 'dig') numBoxes = 4
+        for (let i = 0; i < numBoxes; ++i) {
             this.context.fillStyle = 'white'
             this.context.fillRect(x, y, 16, 16)
             this.context.fillStyle = 'black'
@@ -389,6 +496,13 @@ class RanchScene {
         let viewport = document.getElementById('main-viewport')
 
         document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
+            if (ev.which !== 1) return
+            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
+            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
+            this.eventQueue.push(ev)
+        })
+
+        document.getElementById('main-viewport').addEventListener('click', (ev) => {
             if (ev.which !== 1) return
             ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
             ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
