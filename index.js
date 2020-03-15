@@ -46,6 +46,8 @@ let AI = new Component()
 let Attributes = new Component()
 let Status = new Component()
 let ParentScene = new Component()
+let InputHandler = new Component()
+let State = new Component()
 
 let position = (entity, x, y) => {
     Position.set(entity, { x: x, y: y })
@@ -71,6 +73,14 @@ let parentScene = (entity, scene) => {
     ParentScene.set(entity, { scene: scene })
 }
 
+let inputHandler = (entity, handler) => {
+    InputHandler.set(entity, { handler: handler })
+}
+
+let state = (entity, hovered) => {
+    State.set(entity, { hovered: hovered })
+}
+
 // Entity factories
 let alotFactory = (scene) => {
     let ent = Entity()
@@ -85,15 +95,11 @@ let alotFactory = (scene) => {
     ]
 
     let alotAI = (entity) => {
-        let scene = ParentScene.get(entity).scene
-        let mousePos = scene.mousePos
         let position = Position.get(entity)
         let attributes = Attributes.get(entity)
+        let state = State.get(entity)
 
-        if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
-            scene.currentAlot = attributes
-            return
-        }
+        if (state.hovered) return
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
         let velocity = attributes.speed * 0.1
@@ -123,6 +129,54 @@ let alotFactory = (scene) => {
     status(ent)
     image(ent, 'alot')
     parentScene(ent, scene)
+    state(ent, false)
+    scene.world.add(ent)
+}
+
+let playerFactory = (scene) => {
+    let ent = Entity()
+
+    let handler = (queue) => {
+        queue.forEach(ev => {
+            switch (ev.type) {
+                case 'mousedown':
+                    scene.mousedown = true
+                    scene.clicked = {
+                        x: ev.x,
+                        y: ev.y
+                    }
+                    break
+                case 'mousemove':
+                    let mousePos = {
+                        x: Math.floor(ev.localX / SCALE),
+                        y: Math.floor(ev.localY / SCALE)
+                    }
+                    scene.mousePos = mousePos
+                    scene.currentAlot = {
+                        name: ''
+                    }
+                    let topY = -1
+                    scene.world.forEach(ent => {
+                        let position = Position.get(ent)
+                        let attributes = Attributes.get(ent)
+                        let state = State.get(ent)
+                        if (!position || !attributes || !state) return
+                        state.hovered = false
+                        if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
+                            if (position.y > topY) {
+                                state.hovered = true
+                                scene.currentAlot = attributes
+                                topY = position.y
+                            }
+                        }
+                    });
+                    break
+            }
+        });
+    }
+
+    parentScene(ent, scene)
+    inputHandler(ent, handler)
     scene.world.add(ent)
 }
 
@@ -161,6 +215,16 @@ let AISystem = (scene) => {
     });
 }
 
+let InputHandlerSystem = (scene) => {
+    scene.world.forEach(entity => {
+        let inputHandler = InputHandler.get(entity)
+        if (!inputHandler) return
+        inputHandler.handler(scene.eventQueue)
+    });
+    scene.eventQueue = []
+}
+
+
 class RanchScene {
     constructor() {
         this.world = new Registry();
@@ -183,6 +247,7 @@ class RanchScene {
             spunk: 0
         }
         this.canvas = document.createElement('canvas')
+        this.eventQueue = []
         this.canvas.id = 'main-viewport'
         this.canvas.height = HEIGHT
         this.canvas.width = WIDTH
@@ -195,12 +260,12 @@ class RanchScene {
         alotFactory(this)
         alotFactory(this)
         alotFactory(this)
-        alotFactory(this)
-        alotFactory(this)
+        playerFactory(this)
         this.setupControls()
     }
 
     runSystems() {
+        InputHandlerSystem(this)
         AISystem(this)
         RenderSystem(this)
         this.context.fillStyle = 'black'
@@ -217,48 +282,51 @@ class RanchScene {
         this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus, 4)
         this.context.fillStyle = 'purple'
         this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk, 4)
-            // console.log(this.currentAlot.name)
     }
 
     setupControls() {
         document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
-            this.mousedown = true
-            this.clicked = {
-                x: ev.x,
-                y: ev.y
-            }
+            // this.mousedown = true
+            // this.clicked = {
+            //     x: ev.x,
+            //     y: ev.y
+            // }
+            this.eventQueue.push(ev)
         })
 
-        document.addEventListener('mouseup', (ev) => {
-            this.mousedown = false
-        })
+        // document.addEventListener('mouseup', (ev) => {
+        //     this.mousedown = false
+        // })
 
-        document.addEventListener('mousemove', (ev) => {
-            if (this.mousedown) {
-                this.x += (this.clicked.x - ev.x) / SCALE
-                if (this.x < 0) {
-                    this.x = 0
-                } else if (this.x >= this.w - WIDTH) {
-                    this.x = this.w - WIDTH
-                }
-                this.y += (this.clicked.y - ev.y) / SCALE
-                if (this.y < 0) {
-                    this.y = 0
-                } else if (this.y >= this.h - HEIGHT) {
-                    this.y = this.h - HEIGHT
-                }
-                this.clicked = {
-                    x: ev.x,
-                    y: ev.y
-                }
-            }
-        })
+        // document.addEventListener('mousemove', (ev) => {
+        //     if (this.mousedown) {
+        //         this.x += (this.clicked.x - ev.x) / SCALE
+        //         if (this.x < 0) {
+        //             this.x = 0
+        //         } else if (this.x >= this.w - WIDTH) {
+        //             this.x = this.w - WIDTH
+        //         }
+        //         this.y += (this.clicked.y - ev.y) / SCALE
+        //         if (this.y < 0) {
+        //             this.y = 0
+        //         } else if (this.y >= this.h - HEIGHT) {
+        //             this.y = this.h - HEIGHT
+        //         }
+        //         this.clicked = {
+        //             x: ev.x,
+        //             y: ev.y
+        //         }
+        //     }
+        // })
 
         document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
-            this.mousePos = {
-                x: Math.floor(ev.offsetX / SCALE),
-                y: Math.floor(ev.offsetY / SCALE)
-            }
+            // this.mousePos = {
+            //     x: Math.floor(ev.offsetX / SCALE),
+            //     y: Math.floor(ev.offsetY / SCALE)
+            // }
+            ev.localX = ev.offsetX
+            ev.localY = ev.offsetY
+            this.eventQueue.push(ev)
         })
     }
 }
