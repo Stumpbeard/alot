@@ -85,7 +85,7 @@ let bgRanchFacotry = (scene) => {
 let alotFactory = (scene) => {
     let ent = Entity()
 
-    let randomXY = () => [Math.floor(Math.random() * (scene.w)), Math.floor(Math.random() * (scene.h))]
+    let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
         NAMES[Math.floor(Math.random() * NAMES.length)],
         Math.floor(Math.random() * 10) + 1,
@@ -257,9 +257,11 @@ class RanchScene {
         this.context.imageSmoothingEnabled = 'false'
 
         bgRanchFacotry(this)
-        alotFactory(this)
-        alotFactory(this)
-        alotFactory(this)
+        for (let i = 0; i < 40; ++i) {
+            alotFactory(this)
+        }
+        // alotFactory(this)
+        // alotFactory(this)
         playerFactory(this)
         this.setupControls()
     }
