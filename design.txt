@@ -24,16 +24,20 @@ Breeding & Management overview
     - alot stats:
         - speed
             - racing: adds to total racing score
-            - digging: higher = move faster on screen
+            - digging: higher = move faster on screen (captain and support)
         - endurance
             - racing: adds to total racing score
-            - digging: higher = lower cooldown between digs
+            - digging: 
+                - alot captain: higher = lower cooldown between digs
+                - alot of support: higher = less severe movespeed degradation over time
         - focus
             - racing: adds to total racing score
-            - digging: digging * 2% chance for second diggable item 
+            - digging: 
+                - alot captain: digging * 2% chance for an extra diggable item to spawn
+                - alot of support: tighter item leash radius
         - spunk
             - racing: spunk * 10% chance to add 20% bonus to total racing score
-            - digging: spunk * 5% chance to add 30sec bonus to timer
+            - digging: spunk * 5% chance to add 30sec bonus to timer (captain, no effect for support)
     - breeding:
         - always removes horny status
         - babies only result from male + female alots when the female is horny
@@ -45,8 +49,8 @@ Digging overview:
 - player satisfaction: hopefully just fun on its own + prizes are food to affect alot status
 - premise: take your alot out to the forest or whatever to dig for stuff
 - scene: one player-controlled alot in a grassy area
-- mechanics: move alot around the screen and press dig button to try to find an item 
-    - alot makes a sound to indicate how close you are 
+- mechanics: move captain alot around the screen and press dig button to try to find 4 items. selected number of support alots (up to 3) wander toward an item and then bounce around in its leash radius based on their focus
+    - alot makes a sound to indicate how close it is to the item (range refers to item dig radius)
         - "mrrr" = not in range
         - "mrrR?" = barely in range 
         - "mrrRR!" = well within range
@@ -66,3 +70,7 @@ Items:
 - affect breeding:
     - pineapple: improves chance for bonus from gay alot breeding
     - eggplant: makes alot w/ female repro organs horny 
+
+Notes on Animations:
+- idle animations made for 500ms framerate
+- walking, other action animations made for 250ms
