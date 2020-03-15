@@ -19,5 +19,10 @@ const NAMES = [
     'BAKE',
     'HILM',
     'SUG',
-    'KIPS'
+    'KIPS',
+    'HEFT',
+    'LUMBER',
+    'TIKE',
+    'ABS',
+    'SFEN'
 ]
