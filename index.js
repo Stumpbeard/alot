@@ -90,7 +90,13 @@ let ai = (entity, ai) => {
 }
 
 let attributes = (entity, name, spd, end, fcs, spk) => {
-    Attributes.set(entity, { name: name, speed: spd, endurance: end, focus: fcs, spunk: spk })
+    Attributes.set(entity, {
+        name: name,
+        speed: { natural: spd, bonus: 0 },
+        endurance: { natural: end, bonus: 0 },
+        focus: { natural: fcs, bonus: 0 },
+        spunk: { natural: spk, bonus: 0 }
+    })
 }
 
 let status = (entity) => {
@@ -146,7 +152,7 @@ let alotFactory = (scene) => {
         if (state.hovered) return
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
-        let velocity = attributes.speed * 0.1
+        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
         let dir = Math.floor(Math.random() * 4)
         switch (dir) {
             case 0:
@@ -260,17 +266,6 @@ let playerFactory = (scene) => {
 
                         }
                     }
-                    let button = scene.buttons.dig
-                    if (mousePos.x >= button.x && mousePos.x < button.x + button.w && mousePos.y >= button.y && mousePos.y < button.y + button.h) {
-                        scene.menuState = 'dig'
-                        scene.world.forEach(ent => {
-                            let state = State.get(ent)
-                            let bonus = Bonus.get(ent)
-                            if (state && bonus) {
-                                state.hidden = true
-                            }
-                        });
-                    }
                     break
                 case 'mousedown':
                     handler.keydown.mouse1 = true
@@ -280,9 +275,7 @@ let playerFactory = (scene) => {
                     break
                 case 'mousemove':
                     handler.mousePos = mousePos
-                    scene.currentAlot = {
-                        name: ''
-                    }
+                    scene.currentAlot = undefined
                     let topY = -1
                     scene.world.forEach(ent => {
                         let position = Position.get(ent)
@@ -369,13 +362,7 @@ class RanchScene {
             x: 0,
             y: 0
         }
-        this.currentAlot = {
-            name: '',
-            speed: 0,
-            endurance: 0,
-            focus: 0,
-            spunk: 0
-        }
+        this.currentAlot = undefined
         this.menuState = 'default'
         this.canvas = document.createElement('canvas', { alpha: false })
         this.eventQueue = []
@@ -394,7 +381,7 @@ class RanchScene {
                 w: 56,
                 h: 8,
                 state: 'dig',
-                showItems: 'false'
+                showItems: false
             },
             race: {
                 x: 196,
@@ -402,7 +389,7 @@ class RanchScene {
                 w: 56,
                 h: 8,
                 state: 'race',
-                showItems: 'false'
+                showItems: false
             },
             x: {
                 x: 215,
@@ -410,7 +397,7 @@ class RanchScene {
                 w: 8,
                 h: 8,
                 state: 'default',
-                showItems: 'true'
+                showItems: true
             },
             go: {
                 x: 225,
@@ -418,7 +405,7 @@ class RanchScene {
                 w: 8,
                 h: 8,
                 state: 'default',
-                showItems: 'true'
+                showItems: true
             },
         }
 
@@ -440,15 +427,18 @@ class RanchScene {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.context.fillStyle = 'black'
         this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
-        drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
-        this.context.fillStyle = 'green'
-        this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed, 4)
-        this.context.fillStyle = 'red'
-        this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance, 4)
-        this.context.fillStyle = 'blue'
-        this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus, 4)
-        this.context.fillStyle = 'purple'
-        this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk, 4)
+
+        if (this.currentAlot) {
+            drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
+            this.context.fillStyle = 'green'
+            this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
+            this.context.fillStyle = 'red'
+            this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
+            this.context.fillStyle = 'blue'
+            this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
+            this.context.fillStyle = 'purple'
+            this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
+        }
 
         this.context.fillStyle = 'white'
         this.context.fillRect(196, 112, 56, 2)
