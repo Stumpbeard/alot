@@ -24,5 +24,9 @@ const NAMES = [
     'LUMBER',
     'TIKE',
     'ABS',
-    'SFEN'
+    'SFEN',
+    'BROWN',
+    'POP',
+    'ALLYN',
+    'HENDRY'
 ]
