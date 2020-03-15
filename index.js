@@ -3,6 +3,22 @@ const HEIGHT = 240
 const WIDTH = 256
 const SCALE = 4
 
+const ITEM_BOXES = []
+
+let itemBoxX = 208
+let itemBoxY = 144
+for (let i = 0; i < 10; ++i) {
+    ITEM_BOXES[i] = {
+        x: itemBoxX,
+        y: itemBoxY
+    }
+    itemBoxX += 16
+    if (itemBoxX >= 240) {
+        itemBoxX = 208
+        itemBoxY += 16
+    }
+}
+
 // Main function
 let main = (timestamp) => {
     window.requestAnimationFrame(main)
@@ -27,6 +43,15 @@ let alotImage = new Image()
 alotImage.src = 'images/alot.png'
 images['alot'] = alotImage
 
+let foodEggplantImage = new Image()
+foodEggplantImage.src = 'images/food-eggplant.png'
+images['foodEggplant'] = foodEggplantImage
+
+let foodPineappleImage = new Image()
+foodPineappleImage.src = 'images/food-pineapple.png'
+images['foodPineapple'] = foodPineappleImage
+
+
 let bgRanchImage = new Image()
 bgRanchImage.src = 'images/ranch-bg-cropped.png'
 images['bgRanch'] = bgRanchImage
@@ -41,6 +66,7 @@ let Status = new Component()
 let ParentScene = new Component()
 let InputHandler = new Component()
 let State = new Component()
+let Anchor = new Component()
 
 let position = (entity, x, y) => {
     Position.set(entity, { x: x, y: y })
@@ -67,11 +93,15 @@ let parentScene = (entity, scene) => {
 }
 
 let inputHandler = (entity, handler) => {
-    InputHandler.set(entity, { handler: handler, keyDown: { mouse1: false }, mousePos: { x: 0, y: 0 } })
+    InputHandler.set(entity, { handler: handler, keydown: { mouse1: false }, clickPos: { x: 0, y: 0 }, mousePos: { x: 0, y: 0 } })
 }
 
-let state = (entity, hovered) => {
-    State.set(entity, { hovered: hovered })
+let state = (entity) => {
+    State.set(entity, { hovered: false, clicked: false })
+}
+
+let anchor = (entity, x, y) => {
+    Anchor.set(entity, { x: x, y: y })
 }
 
 // Entity factories
@@ -82,6 +112,7 @@ let bgRanchFacotry = (scene) => {
     image(ent, 'bgRanch')
     scene.world.add(ent)
 }
+
 let alotFactory = (scene) => {
     let ent = Entity()
 
@@ -129,7 +160,58 @@ let alotFactory = (scene) => {
     status(ent)
     image(ent, 'alot')
     parentScene(ent, scene)
-    state(ent, false)
+    state(ent)
+    scene.world.add(ent)
+}
+
+let itemFactory = (scene, graphic, x, y) => {
+    let ent = Entity()
+
+    let handler = (queue) => {
+        let position = Position.get(ent)
+        let anchor = Anchor.get(ent)
+        let handler = InputHandler.get(ent)
+        let state = State.get(ent)
+
+        queue.forEach(ev => {
+            let mousePos = {
+                x: Math.floor(ev.localX),
+                y: Math.floor(ev.localY)
+            }
+
+            switch (ev.type) {
+                case 'mousedown':
+                    if (mousePos.x >= position.x && mousePos.x < position.x + 8 && mousePos.y >= position.y && mousePos.y < position.y + 8) {
+                        state.clicked = true
+                        handler.mousePos = mousePos
+                    }
+                    break
+                case 'mouseup':
+                    state.clicked = false
+                    for (let i = 0; i < ITEM_BOXES.length; ++i) {
+                        let box = ITEM_BOXES[i]
+                        if (position.x >= box.x && position.x < box.x + 16 && position.y >= box.y && position.y < box.y + 16) {
+                            anchor = box
+                        }
+                    }
+                    position.x = anchor.x + 4
+                    position.y = anchor.y + 4
+                    break
+                case 'mousemove':
+                    if (!state.clicked) break
+                    position.x += Math.floor(mousePos.x - handler.mousePos.x)
+                    position.y += Math.floor(mousePos.y - handler.mousePos.y)
+                    handler.mousePos = mousePos
+                    break
+            }
+        });
+    }
+
+    position(ent, x + 4, y + 4)
+    inputHandler(ent, handler)
+    state(ent)
+    image(ent, graphic)
+    anchor(ent, x, y)
     scene.world.add(ent)
 }
 
@@ -261,6 +343,9 @@ class RanchScene {
         for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
+        itemFactory(this, 'foodEggplant', ITEM_BOXES[0].x, ITEM_BOXES[0].y)
+        itemFactory(this, 'foodEggplant', ITEM_BOXES[2].x, ITEM_BOXES[2].y)
+        itemFactory(this, 'foodPineapple', ITEM_BOXES[1].x, ITEM_BOXES[1].y)
         playerFactory(this)
         this.setupControls()
     }
@@ -281,6 +366,22 @@ class RanchScene {
         this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus, 4)
         this.context.fillStyle = 'purple'
         this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk, 4)
+
+        this.context.fillStyle = 'white'
+        this.context.fillRect(196, 112, 56, 2)
+        let x = 208
+        let y = 144
+        for (let i = 0; i < 10; ++i) {
+            this.context.fillStyle = 'white'
+            this.context.fillRect(x, y, 16, 16)
+            this.context.fillStyle = 'black'
+            this.context.fillRect(x + 1, y + 1, 14, 14)
+            x += 16
+            if (x >= 240) {
+                x = 208
+                y += 16
+            }
+        }
         RenderSystem(this)
     }
 
@@ -288,19 +389,16 @@ class RanchScene {
         let viewport = document.getElementById('main-viewport')
 
         document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
+            if (ev.which !== 1) return
             ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
             ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
             this.eventQueue.push(ev)
         })
 
         document.addEventListener('mouseup', (ev) => {
+            if (ev.which !== 1) return
             this.eventQueue.push(ev)
         })
-
-
-        // document.addEventListener('mouseup', (ev) => {
-        //     this.mousedown = false
-        // })
 
         // document.addEventListener('mousemove', (ev) => {
         //     if (this.mousedown) {
