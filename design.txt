@@ -15,12 +15,25 @@ Breeding & Management overview
         - updates after every adventure
         - status list:
             - horny: This alot wants to breed. They will do poorly in a race because they're preoccupied. Breeding now will give a boost for the next adventure. (clears after breeding)
-            - competitive: This alot wants to race. +1 to Spunk. (see racing stats, clears after racing)
+            - competitive: This alot wants to race. +1 to Spunk. (see stats, clears after racing)
             - observant: This alot is focused and perceptive. +1 item in next dig. (clears after digging)
             - tired: This alot doesn't want to do anything. Unable to breed, race, or dig for now. (clears after any other alot has an adventure)
         - all statuses have 50% chance to disappear and a 20% chance to appear after any alot does any activity.
             - up to two statuses at once
             - roll statuses in random order, stop rolling after all have been rolled or two statuses have been applied.
+    - alot stats:
+        - speed
+            - racing: adds to total racing score
+            - digging: higher = move faster on screen
+        - endurance
+            - racing: adds to total racing score
+            - digging: higher = lower cooldown between digs
+        - focus
+            - racing: adds to total racing score
+            - digging: digging * 2% chance for second diggable item 
+        - spunk
+            - racing: spunk * 10% chance to add 20% bonus to total racing score
+            - digging: spunk * 5% chance to add 30sec bonus to timer
     - breeding:
         - always removes horny status
         - babies only result from male + female alots when the female is horny
@@ -51,10 +64,5 @@ Racing overview
 
 Items:
 - affect breeding:
-    - pineapple: makes an alot ready to breed
-
-
-Alot statuses:
-- horny
-    - ready to breed
-    - will do worse in a race
+    - pineapple: improves chance for bonus from gay alot breeding
+    - eggplant: makes alot w/ female repro organs horny 
