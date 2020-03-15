@@ -71,6 +71,7 @@ Items:
     - pineapple: spunk + 2 until next turn
     - eggplant: makes alot horny 
     - carrot: focus + 2 until next turn
+    - apple: endurance + 2 until next turn
 
 Notes on Animations:
 - idle animations made for 500ms framerate
