@@ -1,0 +1,1 @@
+control management needs to be own entity instead of in the AI for Alots
