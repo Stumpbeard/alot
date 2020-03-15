@@ -74,5 +74,13 @@ Items:
     - apple: endurance + 2 until next turn
 
 Notes on Animations:
-- idle animations made for 500ms framerate
-- walking, other action animations made for 250ms
+- alot:
+    - idle: frames 1, 2; 500ms
+    - selected: frame 3; ms N/A
+    - walk: frames 4, 5, 6, 7; 250ms
+    - dig: frames 10, 11, 12, 13; 250ms
+    - found: frames 14, 15; 250ms
+- baby alot:
+    - idle: frames 1, 2; 500ms
+    - selected: frame 3; ms N/A
+    - walk: frames 4, 5, 6, 7; 250ms
