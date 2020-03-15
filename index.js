@@ -2,19 +2,6 @@
 const HEIGHT = 240
 const WIDTH = 256
 const SCALE = 4
-const NAMES = [
-    'MARK',
-    'TAE',
-    'CRUM',
-    'SARA',
-    'TIMB',
-    'LILO',
-    'BOB',
-    'CRIM',
-    'LOP',
-    'MUNJ',
-    'LART'
-]
 
 // Main function
 let main = (timestamp) => {
@@ -35,9 +22,15 @@ let Registry = Set;
 
 // Asset loading
 let images = {}
+
 let alotImage = new Image()
 alotImage.src = 'images/alot.png'
 images['alot'] = alotImage
+
+let bgRanchImage = new Image()
+bgRanchImage.src = 'images/ranch-bg-cropped.png'
+images['bgRanch'] = bgRanchImage
+
 
 // Components
 let Position = new Component()
@@ -82,6 +75,13 @@ let state = (entity, hovered) => {
 }
 
 // Entity factories
+let bgRanchFacotry = (scene) => {
+    let ent = Entity()
+
+    position(ent, 0, 0)
+    image(ent, 'bgRanch')
+    scene.world.add(ent)
+}
 let alotFactory = (scene) => {
     let ent = Entity()
 
@@ -187,7 +187,6 @@ let RenderSystem = (scene) => {
     } else {
         scene.canvas.style = `height: ${HEIGHT * SCALE}px; max-height: 100%;`
     }
-    scene.context.clearRect(0, 0, scene.canvas.width, scene.canvas.height)
 
     let drawQueue = []
     scene.world.forEach(entity => {
@@ -246,7 +245,7 @@ class RanchScene {
             focus: 0,
             spunk: 0
         }
-        this.canvas = document.createElement('canvas')
+        this.canvas = document.createElement('canvas', { alpha: false })
         this.eventQueue = []
         this.canvas.id = 'main-viewport'
         this.canvas.height = HEIGHT
@@ -257,6 +256,7 @@ class RanchScene {
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
 
+        bgRanchFacotry(this)
         alotFactory(this)
         alotFactory(this)
         alotFactory(this)
@@ -267,7 +267,8 @@ class RanchScene {
     runSystems() {
         InputHandlerSystem(this)
         AISystem(this)
-        RenderSystem(this)
+
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.context.fillStyle = 'black'
         this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
         this.context.font = '16px monospace'
@@ -282,15 +283,11 @@ class RanchScene {
         this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus, 4)
         this.context.fillStyle = 'purple'
         this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk, 4)
+        RenderSystem(this)
     }
 
     setupControls() {
         document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
-            // this.mousedown = true
-            // this.clicked = {
-            //     x: ev.x,
-            //     y: ev.y
-            // }
             this.eventQueue.push(ev)
         })
 
@@ -320,10 +317,6 @@ class RanchScene {
         // })
 
         document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
-            // this.mousePos = {
-            //     x: Math.floor(ev.offsetX / SCALE),
-            //     y: Math.floor(ev.offsetY / SCALE)
-            // }
             ev.localX = ev.offsetX
             ev.localY = ev.offsetY
             this.eventQueue.push(ev)
@@ -331,6 +324,6 @@ class RanchScene {
     }
 }
 
-let activeScene = {}
+let activeScene = undefined
 activeScene = new RanchScene()
 window.onload = () => main(0)

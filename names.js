@@ -1,0 +1,19 @@
+const NAMES = [
+    'MARK',
+    'TAE',
+    'CRUM',
+    'SARA',
+    'TIMB',
+    'LILO',
+    'BOB',
+    'CRIM',
+    'LOP',
+    'MUNJ',
+    'LART',
+    'BUTTE',
+    'LARE',
+    'HOMEY',
+    'JULES',
+    'SIMON',
+    'WEDNES'
+]
