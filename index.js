@@ -271,13 +271,10 @@ class RanchScene {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.context.fillStyle = 'black'
         this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
-        this.context.font = '16px monospace'
-        this.context.textBaseline = 'top'
-        this.context.fillStyle = 'white'
-        this.context.fillText(this.currentAlot.name, WIDTH - 60, 0)
-        this.context.fillStyle = 'red'
-        this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed, 4)
+        drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
         this.context.fillStyle = 'green'
+        this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed, 4)
+        this.context.fillStyle = 'red'
         this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance, 4)
         this.context.fillStyle = 'blue'
         this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus, 4)
@@ -326,4 +323,7 @@ class RanchScene {
 
 let activeScene = undefined
 activeScene = new RanchScene()
-window.onload = () => main(0)
+window.onload = () => {
+    initializeFonts()
+    main(0)
+}
