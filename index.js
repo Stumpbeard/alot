@@ -23,7 +23,7 @@ for (let i = 0; i < 10; ++i) {
 let main = (timestamp) => {
     window.requestAnimationFrame(main)
 
-    activeScene.runSystems()
+    activeScene[0].runSystems()
 }
 
 // Debug stuff
@@ -38,10 +38,15 @@ let Registry = Set;
 
 // Asset loading
 let images = {}
+let sheets = {}
 
 let alotImage = new Image()
 alotImage.src = 'images/alot.png'
 images['alot'] = alotImage
+
+let alotSheet = new Image()
+alotSheet.src = 'images/alot-sheet.png'
+images['alotSheet'] = alotSheet
 
 let foodEggplantImage = new Image()
 foodEggplantImage.src = 'images/food-eggplant.png'
@@ -51,10 +56,13 @@ let foodPineappleImage = new Image()
 foodPineappleImage.src = 'images/food-pineapple.png'
 images['foodPineapple'] = foodPineappleImage
 
-
 let bgRanchImage = new Image()
 bgRanchImage.src = 'images/ranch-bg-cropped.png'
 images['bgRanch'] = bgRanchImage
+
+let bgDigImage = new Image()
+bgDigImage.src = 'images/dig-bg.png'
+images['bgDig'] = bgDigImage
 
 let buttonGoImage = new Image()
 buttonGoImage.src = 'images/button-go.png'
@@ -64,10 +72,37 @@ let buttonXImage = new Image()
 buttonXImage.src = 'images/button-x.png'
 images['buttonX'] = buttonXImage
 
+let loadAnimations = () => {
+    // brown alot
+    let brownAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+        dig: [9, 10, 11, 12],
+        found: [13, 14]
+    }
+    let brownAlotFrames = []
+    for (let i = 0; i < alotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(alotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        brownAlotFrames.push(canvas)
+    }
+    sheets['alot'] = {
+        animations: brownAlotAnimations,
+        frames: brownAlotFrames
+    }
+}
+
 
 // Components
 let Position = new Component()
 let Sprite = new Component()
+let Animation = new Component()
 let AI = new Component()
 let Attributes = new Component()
 let Status = new Component()
@@ -89,7 +124,11 @@ let position = (entity, x, y) => {
 }
 
 let image = (entity, image) => {
-    Sprite.set(entity, { image: images[image] })
+    Sprite.set(entity, { image: image })
+}
+
+let animation = (entity, animation, rate) => {
+    Animation.set(entity, { animation: animation, rate: rate, timer: 0, currentFrame: 0 })
 }
 
 let ai = (entity, ai) => {
@@ -137,7 +176,20 @@ let bgRanchFacotry = (scene) => {
     position(ent, 0, 0)
     image(ent, 'bgRanch')
     scene.world.add(ent)
+
+    return ent
 }
+
+let bgDigFactory = (scene) => {
+    let ent = Entity()
+
+    position(ent, 0, 0)
+    image(ent, 'bgDig')
+    scene.world.add(ent)
+
+    return ent
+}
+
 
 let alotFactory = (scene) => {
     let ent = Entity()
@@ -145,10 +197,10 @@ let alotFactory = (scene) => {
     let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
         NAMES[Math.floor(Math.random() * NAMES.length)],
-        Math.floor(Math.random() * 10) + 1,
-        Math.floor(Math.random() * 10) + 1,
-        Math.floor(Math.random() * 10) + 1,
-        Math.floor(Math.random() * 10) + 1
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
     ]
 
     let alotAI = (ent) => {
@@ -185,9 +237,64 @@ let alotFactory = (scene) => {
     attributes(ent, ...randomAtr())
     status(ent)
     image(ent, 'alot')
+    animation(ent, 'idle', 500)
     parentScene(ent, scene)
     state(ent)
     scene.world.add(ent)
+
+    return ent
+}
+
+let playableAlotFactory = (scene, x, y) => {
+    let ent = alotFactory(scene)
+
+    let position = Position.get(ent)
+    AI.delete(ent)
+    position.x = x
+    position.y = y
+
+    let handler = (queue) => {
+        let position = Position.get(ent)
+        let inputHandler = InputHandler.get(ent)
+        let attributes = Attributes.get(ent)
+        let entAnimation = Animation.get(ent)
+        queue.forEach(ev => {
+            if (ev.type === 'keydown') {
+                inputHandler.keydown[ev.key] = true
+            }
+            if (ev.type === 'keyup') {
+                inputHandler.keydown[ev.key] = false
+            }
+        });
+
+        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+        if (inputHandler.keydown['ArrowUp']) position.y -= velocity
+        if (inputHandler.keydown['ArrowDown']) position.y += velocity
+        if (inputHandler.keydown['ArrowLeft']) position.x -= velocity
+        if (inputHandler.keydown['ArrowRight']) position.x += velocity
+
+        if (!inputHandler.keydown['ArrowUp'] && !inputHandler.keydown['ArrowDown'] && !inputHandler.keydown['ArrowLeft'] && !inputHandler.keydown['ArrowRight']) {
+            if (entAnimation.animation !== 'idle') {
+                animation(ent, 'idle', 500)
+            }
+        } else {
+            if (entAnimation.animation !== 'walk') {
+                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+            }
+        }
+
+        if (position.x < 0) position.x = 0
+        if (position.x >= scene.w - 32) position.x = scene.w - 32
+        if (position.y < 0) position.y = 0
+        if (position.y >= scene.h - 32) position.y = scene.h - 32
+
+        scene.x = position.x - scene.canvas.width / 2 - 16
+        scene.y = position.y - scene.canvas.height / 2 - 16
+    }
+
+    inputHandler(ent, handler)
+
+    return ent
 }
 
 let itemFactory = (scene, graphic, x, y, bonuses) => {
@@ -274,6 +381,8 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
     anchor(ent, x, y)
     bonus(ent, bonuses.status, bonuses.attributes)
     scene.world.add(ent)
+
+    return ent
 }
 
 let pineappleFactory = (scene, x, y) => {
@@ -282,14 +391,16 @@ let pineappleFactory = (scene, x, y) => {
             spunk: 2
         }
     }
-    itemFactory(scene, 'foodPineapple', x, y, bonus)
+
+    return itemFactory(scene, 'foodPineapple', x, y, bonus)
 }
 
 let eggplantFactory = (scene, x, y) => {
     const bonus = {
         status: ['horny']
     }
-    itemFactory(scene, 'foodEggplant', x, y, bonus)
+
+    return itemFactory(scene, 'foodEggplant', x, y, bonus)
 }
 
 let playerFactory = (scene) => {
@@ -354,6 +465,8 @@ let playerFactory = (scene) => {
     parentScene(ent, scene)
     inputHandler(ent, handler)
     scene.world.add(ent)
+
+    return ent
 }
 
 // Systems
@@ -367,21 +480,52 @@ let RenderSystem = (scene) => {
     let drawQueue = []
     scene.world.forEach(entity => {
         let position = Position.get(entity)
+        let animation = Animation.get(entity)
         let sprite = Sprite.get(entity)
         if (!position || !sprite) return
         let state = State.get(entity)
         if (state && state.hidden) return
-        drawQueue.push({ sprite: sprite, position: position })
+        let drawable = { sprite: sprite, position: position }
+        if (animation) drawable.animation = animation
+        drawQueue.push(drawable)
     });
     drawQueue.sort((a, b) => a.position.y - b.position.y)
+    let offsetX = scene.x
+    let offsetY = scene.y
+    if (offsetX < 0) offsetX = 0
+    if (offsetX >= scene.w - scene.canvas.width) offsetX = scene.w - scene.canvas.width
+    if (offsetY < 0) offsetY = 0
+    if (offsetY >= scene.h - scene.canvas.height) offsetY = scene.h - scene.canvas.height
     drawQueue.forEach(entity => {
-        scene.context.drawImage(entity.sprite.image, Math.floor(entity.position.x - scene.x), Math.floor(entity.position.y - scene.y))
+        let imageToDraw = images[entity.sprite.image]
+        if (entity.animation) {
+            imageToDraw = sheets[entity.sprite.image].frames[sheets[entity.sprite.image].animations[entity.animation.animation][entity.animation.currentFrame]]
+        }
+        scene.context.drawImage(imageToDraw, Math.floor(entity.position.x - offsetX), Math.floor(entity.position.y - offsetY))
     });
     rectangles.forEach(rectangle => {
         scene.context.strokeStyle = 'red'
         scene.context.strokeRect(Math.floor(rectangle.x), Math.floor(rectangle.y), 32, 32)
     });
     rectangles = []
+}
+
+let AnimationSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let sprite = Sprite.get(ent)
+        let animation = Animation.get(ent)
+        if (!sprite || !animation) return
+
+        animation.timer += 1000 / 60
+        if (animation.timer >= animation.rate) {
+            animation.currentFrame += 1
+            animation.timer = 0
+        }
+
+        if (animation.currentFrame >= sheets[sprite.image].animations[animation.animation].length) {
+            animation.currentFrame = 0
+        }
+    });
 }
 
 let AISystem = (scene) => {
@@ -402,7 +546,7 @@ let InputHandlerSystem = (scene) => {
     scene.eventQueue = []
 }
 
-
+// Scenes
 class RanchScene {
     constructor() {
         this.world = new Registry();
@@ -539,6 +683,8 @@ class RanchScene {
             }
         }
         RenderSystem(this)
+        AnimationSystem(this)
+            // drawWhiteText(this.context, 'STATUS', 200, 49)
     }
 
     setupControls() {
@@ -565,27 +711,6 @@ class RanchScene {
             this.eventQueue.push(ev)
         })
 
-        // document.addEventListener('mousemove', (ev) => {
-        //     if (this.mousedown) {
-        //         this.x += (this.clicked.x - ev.x) / SCALE
-        //         if (this.x < 0) {
-        //             this.x = 0
-        //         } else if (this.x >= this.w - WIDTH) {
-        //             this.x = this.w - WIDTH
-        //         }
-        //         this.y += (this.clicked.y - ev.y) / SCALE
-        //         if (this.y < 0) {
-        //             this.y = 0
-        //         } else if (this.y >= this.h - HEIGHT) {
-        //             this.y = this.h - HEIGHT
-        //         }
-        //         this.clicked = {
-        //             x: ev.x,
-        //             y: ev.y
-        //         }
-        //     }
-        // })
-
         document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
             ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
             ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
@@ -594,9 +719,54 @@ class RanchScene {
     }
 }
 
-let activeScene = undefined
-activeScene = new RanchScene()
+class DigScene {
+    constructor() {
+        this.world = new Registry();
+        this.x = 0
+        this.y = 0
+        this.canvas = document.createElement('canvas', { alpha: false })
+        this.eventQueue = []
+        this.canvas.id = 'main-viewport'
+        this.canvas.height = HEIGHT
+        this.canvas.width = WIDTH
+        this.w = WIDTH * 2
+        this.h = HEIGHT * 2
+        this.context = this.canvas.getContext('2d')
+        this.context.imageSmoothingEnabled = 'false'
+
+        try {
+            let canvas = document.getElementById('main-viewport')
+            document.body.removeChild(canvas)
+        } catch {}
+        document.body.appendChild(this.canvas)
+
+        bgDigFactory(this)
+        playableAlotFactory(this, 0, this.h / 4)
+        this.setupControls()
+    }
+
+    runSystems() {
+        InputHandlerSystem(this)
+        RenderSystem(this)
+        AnimationSystem(this)
+    }
+
+    setupControls() {
+        document.addEventListener('keydown', (ev) => {
+            this.eventQueue.push(ev)
+        })
+
+        document.addEventListener('keyup', (ev) => {
+            this.eventQueue.push(ev)
+        })
+    }
+}
+
+let activeScene = []
+activeScene.push(new RanchScene())
+activeScene.unshift(new DigScene())
 window.onload = () => {
     initializeFonts()
+    loadAnimations()
     main(0)
 }
