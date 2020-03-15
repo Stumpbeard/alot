@@ -67,7 +67,7 @@ let parentScene = (entity, scene) => {
 }
 
 let inputHandler = (entity, handler) => {
-    InputHandler.set(entity, { handler: handler })
+    InputHandler.set(entity, { handler: handler, keyDown: { mouse1: false }, mousePos: { x: 0, y: 0 } })
 }
 
 let state = (entity, hovered) => {
@@ -94,10 +94,10 @@ let alotFactory = (scene) => {
         Math.floor(Math.random() * 10) + 1
     ]
 
-    let alotAI = (entity) => {
-        let position = Position.get(entity)
-        let attributes = Attributes.get(entity)
-        let state = State.get(entity)
+    let alotAI = (ent) => {
+        let position = Position.get(ent)
+        let attributes = Attributes.get(ent)
+        let state = State.get(ent)
 
         if (state.hovered) return
         let decision = Math.floor(Math.random() * 20)
@@ -137,21 +137,22 @@ let playerFactory = (scene) => {
     let ent = Entity()
 
     let handler = (queue) => {
+        let handler = InputHandler.get(ent)
+
         queue.forEach(ev => {
             switch (ev.type) {
                 case 'mousedown':
-                    scene.mousedown = true
-                    scene.clicked = {
-                        x: ev.x,
-                        y: ev.y
-                    }
+                    handler.keydown.mouse1 = true
+                    break
+                case 'mouseup':
+                    handler.keydown.mouse1 = false
                     break
                 case 'mousemove':
                     let mousePos = {
                         x: Math.floor(ev.localX),
                         y: Math.floor(ev.localY)
                     }
-                    scene.mousePos = mousePos
+                    handler.mousePos = mousePos
                     scene.currentAlot = {
                         name: ''
                     }
@@ -284,9 +285,18 @@ class RanchScene {
     }
 
     setupControls() {
+        let viewport = document.getElementById('main-viewport')
+
         document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
+            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
+            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
             this.eventQueue.push(ev)
         })
+
+        document.addEventListener('mouseup', (ev) => {
+            this.eventQueue.push(ev)
+        })
+
 
         // document.addEventListener('mouseup', (ev) => {
         //     this.mousedown = false
@@ -314,7 +324,6 @@ class RanchScene {
         // })
 
         document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
-            let viewport = document.getElementById('main-viewport')
             ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
             ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
             this.eventQueue.push(ev)
