@@ -148,8 +148,8 @@ let playerFactory = (scene) => {
                     break
                 case 'mousemove':
                     let mousePos = {
-                        x: Math.floor(ev.localX / SCALE),
-                        y: Math.floor(ev.localY / SCALE)
+                        x: Math.floor(ev.localX),
+                        y: Math.floor(ev.localY)
                     }
                     scene.mousePos = mousePos
                     scene.currentAlot = {
@@ -257,11 +257,9 @@ class RanchScene {
         this.context.imageSmoothingEnabled = 'false'
 
         bgRanchFacotry(this)
-        for (let i = 0; i < 40; ++i) {
+        for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
-        // alotFactory(this)
-        // alotFactory(this)
         playerFactory(this)
         this.setupControls()
     }
@@ -316,8 +314,9 @@ class RanchScene {
         // })
 
         document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
-            ev.localX = ev.offsetX
-            ev.localY = ev.offsetY
+            let viewport = document.getElementById('main-viewport')
+            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
+            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
             this.eventQueue.push(ev)
         })
     }
