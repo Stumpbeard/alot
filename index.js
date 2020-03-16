@@ -72,6 +72,10 @@ let buttonXImage = new Image()
 buttonXImage.src = 'images/button-x.png'
 images['buttonX'] = buttonXImage
 
+let statusHornyImage = new Image()
+statusHornyImage.src = 'images/status-horny.png'
+images['statusHorny'] = statusHornyImage
+
 let loadAnimations = () => {
     // brown alot
     let brownAlotAnimations = {
@@ -218,6 +222,28 @@ let bgDigFactory = (scene) => {
 
     position(ent, 0, 0)
     image(ent, 'bgDig')
+    scene.world.add(ent)
+
+    return ent
+}
+
+let statusHornyFactory = (scene, targetEnt) => {
+    let ent = Entity()
+
+    let statusAI = () => {
+        let entTarget = Target.get(ent)
+        let targetPos = Position.get(entTarget.ent)
+        let entPos = Position.get(ent)
+        entPos.x = targetPos.x
+        entPos.y = targetPos.y
+    }
+
+    let targetPos = Position.get(targetEnt)
+
+    image(ent, 'statusHorny')
+    position(ent, targetPos.x, targetPos.y)
+    target(entity, undefined, undefined, targetEnt)
+    ai(entity, statusAI)
     scene.world.add(ent)
 
     return ent
