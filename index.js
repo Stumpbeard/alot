@@ -40,13 +40,21 @@ let Registry = Set;
 let images = {}
 let sheets = {}
 
-let alotSheet = new Image()
-alotSheet.src = 'images/alot-sheet.png'
-images['alot'] = alotSheet
+let brownAlotSheet = new Image()
+brownAlotSheet.src = 'images/alot-sheet.png'
+images['brownAlot'] = brownAlotSheet
 
-let babyAlotSheet = new Image()
-babyAlotSheet.src = 'images/baby-alot-sheet.png'
-images['babyAlot'] = babyAlotSheet
+let redAlotSheet = new Image()
+redAlotSheet.src = 'images/alotofred-sheet.png'
+images['redAlot'] = redAlotSheet
+
+let brownBabyAlotSheet = new Image()
+brownBabyAlotSheet.src = 'images/baby-alot-sheet.png'
+images['brownBabyAlot'] = brownBabyAlotSheet
+
+let redBabyAlotSheet = new Image()
+redBabyAlotSheet.src = 'images/baby-alot-red-sheet.png'
+images['redBabyAlot'] = redBabyAlotSheet
 
 let foodEggplantImage = new Image()
 foodEggplantImage.src = 'images/food-eggplant.png'
@@ -86,41 +94,87 @@ let loadAnimations = () => {
         found: [13, 14]
     }
     let brownAlotFrames = []
-    for (let i = 0; i < alotSheet.naturalWidth; i += 32) {
+    for (let i = 0; i < brownAlotSheet.naturalWidth; i += 32) {
         let canvas = document.createElement('canvas')
         canvas.width = 32
         canvas.height = 32
         let ctx = canvas.getContext('2d')
 
         ctx.clearRect(0, 0, 32, 32)
-        ctx.drawImage(alotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        ctx.drawImage(brownAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
         brownAlotFrames.push(canvas)
     }
-    sheets['alot'] = {
+    sheets['brownAlot'] = {
         animations: brownAlotAnimations,
         frames: brownAlotFrames
     }
 
-    // baby brown alot
-    let babyBrownAlotAnimations = {
+    // red alot
+    let redAlotAnimations = {
         idle: [0, 1],
         selected: [2],
         walk: [3, 4, 5, 6],
+        dig: [9, 10, 11, 12],
+        found: [13, 14]
     }
-    let babyBrownAlotFrames = []
-    for (let i = 0; i < babyAlotSheet.naturalWidth; i += 32) {
+    let redAlotFrames = []
+    for (let i = 0; i < redAlotSheet.naturalWidth; i += 32) {
         let canvas = document.createElement('canvas')
         canvas.width = 32
         canvas.height = 32
         let ctx = canvas.getContext('2d')
 
         ctx.clearRect(0, 0, 32, 32)
-        ctx.drawImage(babyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
-        babyBrownAlotFrames.push(canvas)
+        ctx.drawImage(redAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        redAlotFrames.push(canvas)
     }
-    sheets['babyAlot'] = {
-        animations: babyBrownAlotAnimations,
-        frames: babyBrownAlotFrames
+    sheets['redAlot'] = {
+        animations: redAlotAnimations,
+        frames: redAlotFrames
+    }
+
+    // baby brown alot
+    let brownBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let brownBabyAlotFrames = []
+    for (let i = 0; i < brownBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(brownBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        brownBabyAlotFrames.push(canvas)
+    }
+    sheets['brownBabyAlot'] = {
+        animations: brownBabyAlotAnimations,
+        frames: brownBabyAlotFrames
+    }
+
+    // baby red alot
+    let redBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let redBabyAlotFrames = []
+    for (let i = 0; i < redBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(redBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        redBabyAlotFrames.push(canvas)
+    }
+    sheets['redBabyAlot'] = {
+        animations: redBabyAlotAnimations,
+        frames: redBabyAlotFrames
     }
 }
 
@@ -465,7 +519,7 @@ let alotFactory = (scene, attr, x, y) => {
         attributes(ent, attr.name, attr.speed.natural, attr.endurance.natural, attr.focus.natural, attr.spunk.natural, attr.sex)
     }
     status(ent)
-    image(ent, 'alot')
+    image(ent, 'brownAlot')
     animation(ent, 'idle', 500)
     parentScene(ent, scene)
     state(ent)
@@ -524,7 +578,7 @@ let babyAlotFactory = (scene, x, y) => {
 
     ai(ent, babyAI)
     position(ent, x, y)
-    image(ent, 'babyAlot')
+    image(ent, 'brownBabyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
     timer(ent, 60000)
