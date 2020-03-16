@@ -40,13 +40,13 @@ let Registry = Set;
 let images = {}
 let sheets = {}
 
-let alotImage = new Image()
-alotImage.src = 'images/alot.png'
-images['alot'] = alotImage
-
 let alotSheet = new Image()
 alotSheet.src = 'images/alot-sheet.png'
-images['alotSheet'] = alotSheet
+images['alot'] = alotSheet
+
+let babyAlotSheet = new Image()
+babyAlotSheet.src = 'images/baby-alot-sheet.png'
+images['babyAlot'] = babyAlotSheet
 
 let foodEggplantImage = new Image()
 foodEggplantImage.src = 'images/food-eggplant.png'
@@ -64,9 +64,9 @@ let bgDigImage = new Image()
 bgDigImage.src = 'images/dig-bg.png'
 images['bgDig'] = bgDigImage
 
-let buttonGoImage = new Image()
-buttonGoImage.src = 'images/button-go.png'
-images['buttonGo'] = buttonGoImage
+let buttonHeartImage = new Image()
+buttonHeartImage.src = 'images/button-heart.png'
+images['buttonHeart'] = buttonHeartImage
 
 let buttonXImage = new Image()
 buttonXImage.src = 'images/button-x.png'
@@ -101,6 +101,7 @@ let loadAnimations = () => {
 
 // Components
 let Position = new Component()
+let Target = new Component()
 let Sprite = new Component()
 let Animation = new Component()
 let AI = new Component()
@@ -111,8 +112,9 @@ let InputHandler = new Component()
 let State = new Component()
 let Anchor = new Component()
 let Bonus = new Component()
+let Timer = new Component()
 
-let components = [Position, Sprite, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus]
+let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus]
 let removeEntity = (ent) => {
     components.forEach(component => {
         component.delete(ent)
@@ -121,6 +123,10 @@ let removeEntity = (ent) => {
 
 let position = (entity, x, y) => {
     Position.set(entity, { x: x, y: y })
+}
+
+let target = (entity, x, y, ent) => {
+    Target.set(entity, { x: x, y: y, ent: ent })
 }
 
 let image = (entity, image) => {
@@ -169,6 +175,10 @@ let bonus = (entity, status, attributes) => {
     Bonus.set(entity, { status: status, attributes: attributes })
 }
 
+let timer = (entity, timer) => {
+    Timer.set(entity, { timer: timer })
+}
+
 // Entity factories
 let bgRanchFacotry = (scene) => {
     let ent = Entity()
@@ -208,6 +218,52 @@ let alotFactory = (scene) => {
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
         let entAnimation = Animation.get(ent)
+        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+
+        if (state.mating) {
+            if (entAnimation.animation === 'found') {
+                let timer = Timer.get(ent)
+                timer.timer -= 1000 / 60
+                if (timer.timer <= 0) {
+                    state.mating = false
+                    Timer.delete(ent)
+                }
+                return
+            }
+            if (entAnimation.animation !== 'walk') {
+                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+            }
+            let target = Target.get(ent)
+            let targetPos = Position.get(target.ent)
+            let averageX = Math.abs(position.x - targetPos.x) / 2
+            let averageY = Math.abs(position.y - targetPos.y) / 2
+            if (averageX >= averageY) {
+                if (position.x < targetPos.x) {
+                    position.x += velocity
+                } else {
+                    position.x -= velocity
+                }
+            } else if (averageX < averageY) {
+                if (position.y < targetPos.y) {
+                    position.y += velocity
+                } else {
+                    position.y -= velocity
+                }
+            }
+            target.x = targetPos.x
+            target.y = targetPos.y
+
+            if (position.x < targetPos.x + 16 &&
+                position.x + 16 > targetPos.x &&
+                position.y < targetPos.y + 16 &&
+                position.y + 16 > targetPos.y) {
+                animation(ent, 'found', 250)
+                Target.delete(ent)
+                timer(ent, 3000)
+            }
+
+            return
+        }
 
         if (state.clicked) {
             animation(ent, 'selected', 500)
@@ -218,7 +274,6 @@ let alotFactory = (scene) => {
         if (state.hovered || state.clicked) return
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
-        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
         let dir = Math.floor(Math.random() * 4)
         switch (dir) {
             case 0:
@@ -500,6 +555,29 @@ let playerFactory = (scene) => {
                                         state.hidden = !button.showItems
                                     }
                                 });
+                                if (key === 'x') {
+                                    scene.selectedAlots = [undefined, undefined]
+                                    scene.world.forEach(ent => {
+                                        let entState = State.get(ent)
+                                        let entAttr = Attributes.get(ent)
+                                        if (entState && entAttr) entState.clicked = false
+                                    });
+                                } else if (key === 'heart' && scene.selectedAlots[0] && scene.selectedAlots[1]) {
+                                    let state1 = State.get(scene.selectedAlots[0])
+                                    let pos1 = Position.get(scene.selectedAlots[0])
+                                    let state2 = State.get(scene.selectedAlots[1])
+                                    let pos2 = Position.get(scene.selectedAlots[1])
+
+                                    state1.mating = true
+                                    state1.clicked = false
+                                    state2.mating = true
+                                    state2.clicked = false
+                                    target(scene.selectedAlots[0], pos2.x, pos2.y, scene.selectedAlots[1])
+                                    target(scene.selectedAlots[1], pos1.x, pos1.y, scene.selectedAlots[0])
+
+                                    scene.menuState = 'default'
+                                    scene.selectedAlots = [undefined, undefined]
+                                }
                             }
 
                         }
@@ -654,7 +732,7 @@ class RanchScene {
                 state: 'default',
                 showItems: true
             },
-            go: {
+            heart: {
                 x: 225,
                 y: 182,
                 w: 8,
@@ -689,7 +767,7 @@ class RanchScene {
             this.currentAlot = Attributes.get(this.selectedAlots[0])
         }
         if (this.currentAlot) {
-            drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
+            drawWhiteText(this.context, this.currentAlot.name, WIDTH - 32 - (this.currentAlot.name.length / 2 * 8), 4)
             this.context.fillStyle = 'green'
             this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
             this.context.fillStyle = 'red'
@@ -700,54 +778,76 @@ class RanchScene {
             this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
             this.context.fillStyle = 'purple'
             this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
+
+            if (this.selectedAlots[0]) {
+                this.context.fillStyle = 'white'
+                this.context.fillRect(196, 120, 2, 8)
+                this.context.fillRect(250, 120, 2, 8)
+                this.context.fillStyle = 'black'
+                this.context.fillRect(197, 121, 54, 6)
+
+                drawWhiteText(this.context, 'MATE', 208, 120)
+            }
         }
 
         this.context.fillStyle = 'white'
         this.context.fillRect(196, 112, 56, 2)
 
-        this.context.fillRect(196, 120, 2, 8)
-        this.context.fillRect(250, 120, 2, 8)
-        this.context.fillRect(196, 130, 2, 8)
-        this.context.fillRect(250, 130, 2, 8)
-        if (this.menuState === 'default') {
-            this.context.fillStyle = 'black'
-            this.context.fillRect(197, 121, 54, 6)
-            this.context.fillRect(197, 131, 54, 6)
-        } else if (this.menuState === 'mate') {
+        // this.context.fillRect(196, 120, 2, 8)
+        // this.context.fillRect(250, 120, 2, 8)
+        // this.context.fillRect(196, 130, 2, 8)
+        // this.context.fillRect(250, 130, 2, 8)
+        // if (this.menuState === 'default') {
+        // this.context.fillStyle = 'black'
+        // this.context.fillRect(197, 121, 54, 6)
+        //     this.context.fillRect(197, 131, 54, 6)
+        // } else if (this.menuState === 'mate') {
+        //     this.context.fillStyle = 'white'
+        //     this.context.fillRect(196, 120, 12, 8)
+        //     this.context.fillRect(240, 120, 12, 8)
+        //     this.context.fillStyle = 'black'
+        //     this.context.fillRect(197, 131, 54, 6)
+        //     this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
+        //     this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
+        // } else 
+        if (this.menuState === 'mate') {
             this.context.fillStyle = 'white'
             this.context.fillRect(196, 120, 12, 8)
             this.context.fillRect(240, 120, 12, 8)
             this.context.fillStyle = 'black'
             this.context.fillRect(197, 131, 54, 6)
             this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
-            this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
-        } else if (this.menuState === 'mate') {
-            this.context.fillStyle = 'white'
-            this.context.fillRect(196, 120, 12, 8)
-            this.context.fillRect(240, 120, 12, 8)
-            this.context.fillStyle = 'black'
-            this.context.fillRect(197, 131, 54, 6)
-            this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
-            this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
+
+            if (this.selectedAlots[1]) {
+                let otherAttr = Attributes.get(this.selectedAlots[1])
+                this.context.drawImage(images['buttonHeart'], this.buttons.heart.x, this.buttons.heart.y)
+                drawWhiteText(this.context, otherAttr.name, WIDTH - 32 - (otherAttr.name.length / 2 * 8), 168)
+            }
         }
-        drawWhiteText(this.context, 'MATE', 208, 120)
-        drawWhiteText(this.context, 'REST', 208, 130)
+        // drawWhiteText(this.context, 'MATE', 208, 120)
+        // drawWhiteText(this.context, 'REST', 208, 130)
 
 
         let x = 208
         let y = 144
         let numBoxes = 10
-        if (this.menuState === 'mate') numBoxes = 2
-        for (let i = 0; i < numBoxes; ++i) {
-            this.context.fillStyle = 'white'
-            this.context.fillRect(x, y, 16, 16)
-            this.context.fillStyle = 'black'
-            this.context.fillRect(x + 1, y + 1, 14, 14)
-            x += 16
-            if (x >= 240) {
-                x = 208
-                y += 16
+        if (this.menuState === 'default') {
+            for (let i = 0; i < numBoxes; ++i) {
+                this.context.fillStyle = 'white'
+                this.context.fillRect(x, y, 16, 16)
+                this.context.fillStyle = 'black'
+                this.context.fillRect(x + 1, y + 1, 14, 14)
+                x += 16
+                if (x >= 240) {
+                    x = 208
+                    y += 16
+                }
             }
+        } else if (this.menuState === 'mate') {
+            this.context.fillStyle = 'white'
+            this.context.fillRect(216, 144, 16, 16)
+            this.context.fillStyle = 'black'
+            this.context.fillRect(216 + 1, 144 + 1, 14, 14)
         }
         RenderSystem(this)
         AnimationSystem(this)
