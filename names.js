@@ -28,5 +28,6 @@ const NAMES = [
     'BROWN',
     'POP',
     'ALLYN',
-    'HENDRY'
+    'HENDRY',
+    'SHUMS'
 ]
