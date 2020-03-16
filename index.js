@@ -332,8 +332,9 @@ let fruitSpawnerFactory = (scene) => {
 }
 
 
-let alotFactory = (scene, attr, x, y) => {
+let alotFactory = (scene, attr, x, y, color) => {
     let ent = Entity()
+    if (!color) color = 'brown'
 
     let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
@@ -519,7 +520,7 @@ let alotFactory = (scene, attr, x, y) => {
         attributes(ent, attr.name, attr.speed.natural, attr.endurance.natural, attr.focus.natural, attr.spunk.natural, attr.sex)
     }
     status(ent)
-    image(ent, 'brownAlot')
+    image(ent, color + 'Alot')
     animation(ent, 'idle', 500)
     parentScene(ent, scene)
     state(ent)
@@ -528,8 +529,9 @@ let alotFactory = (scene, attr, x, y) => {
     return ent
 }
 
-let babyAlotFactory = (scene, x, y) => {
+let babyAlotFactory = (scene, x, y, color) => {
     let ent = Entity()
+    if (!color) color = 'brown'
 
     let randomAtr = () => [
         NAMES[Math.floor(Math.random() * NAMES.length)],
@@ -578,7 +580,7 @@ let babyAlotFactory = (scene, x, y) => {
 
     ai(ent, babyAI)
     position(ent, x, y)
-    image(ent, 'brownBabyAlot')
+    image(ent, color + 'BabyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
     timer(ent, 60000)
