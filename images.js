@@ -88,3 +88,7 @@ images['statusHorny'] = statusHornyImage
 let titleScreenImage = new Image()
 titleScreenImage.src = 'images/title-screen.png'
 images['titleScreen'] = titleScreenImage
+
+let cursorImage = new Image()
+cursorImage.src = 'images/cursor-default.png'
+images['cursor'] = cursorImage

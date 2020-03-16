@@ -24,6 +24,10 @@ let ranchMusic = document.createElement('audio')
 ranchMusic.src = "sounds/ranch-music.mp3"
 ranchMusic.loop = true
 
+let clickSound = document.createElement('audio')
+clickSound.src = "sounds/click.mp3"
+
+
 // Main function
 let main = (timestamp) => {
     window.requestAnimationFrame(main)
@@ -781,6 +785,31 @@ let eggplantFactory = (scene, x, y) => {
     return itemFactory(scene, 'foodEggplant', x, y, bonus)
 }
 
+let cursorFactory = (scene) => {
+    let ent = Entity()
+
+    let handler = (queue) => {
+        let pos = Position.get(ent)
+        queue.forEach(ev => {
+            if (ev.type === 'mousemove') {
+                pos.x = ev.localX
+                pos.y = ev.localY
+            }
+
+            if (ev.type === 'click') {
+                clickSound.play()
+            }
+        });
+    }
+
+    inputHandler(ent, handler)
+    image(ent, 'cursor')
+    position(ent, 0, 0)
+    scene.world.add(ent)
+
+    return ent
+}
+
 let playerFactory = (scene) => {
     let ent = Entity()
 
@@ -1007,6 +1036,7 @@ class RanchScene {
         }
 
         bgRanchFacotry(this)
+        cursorFactory(this)
         for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
