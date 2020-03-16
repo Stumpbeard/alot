@@ -230,9 +230,15 @@ let fruitSpawnerFactory = (scene) => {
         let entTimer = Timer.get(ent)
         entTimer.timer -= 1000 / 60
         if (entTimer.timer <= 0) {
-            let x = Math.floor(Math.random() * scene.w - 64 - 8)
-            let y = Math.floor(Math.random() * scene.h - 8)
-            eggplantFactory(scene, x, y)
+            let existingItems = 0
+            scene.world.forEach(ent => {
+                if (Bonus.get(ent)) existingItems += 1
+            });
+            if (existingItems < 10) {
+                let x = Math.floor(Math.random() * scene.w - 64 - 8)
+                let y = Math.floor(Math.random() * scene.h - 8)
+                eggplantFactory(scene, x, y)    
+            }
             timer(ent, 15000)
         }
     }
