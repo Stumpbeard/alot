@@ -156,7 +156,8 @@ let image = (entity, image) => {
 }
 
 let animation = (entity, animation, rate) => {
-    Animation.set(entity, { animation: animation, rate: rate, timer: 0, currentFrame: 0 })
+    let randomTimerStart = Math.floor(Math.random() * rate / 2)
+    Animation.set(entity, { animation: animation, rate: rate, timer: randomTimerStart, currentFrame: 0 })
 }
 
 let ai = (entity, ai) => {
@@ -217,6 +218,27 @@ let bgDigFactory = (scene) => {
 
     position(ent, 0, 0)
     image(ent, 'bgDig')
+    scene.world.add(ent)
+
+    return ent
+}
+
+let fruitSpawnerFactory = (scene) => {
+    let ent = Entity()
+
+    let spawnerAI = () => {
+        let entTimer = Timer.get(ent)
+        entTimer.timer -= 1000 / 60
+        if (entTimer.timer <= 0) {
+            let x = Math.floor(Math.random() * scene.w - 64 - 8)
+            let y = Math.floor(Math.random() * scene.h - 8)
+            eggplantFactory(scene, x, y)
+            timer(ent, 15000)
+        }
+    }
+
+    ai(ent, spawnerAI)
+    timer(ent, 15000)
     scene.world.add(ent)
 
     return ent
@@ -839,11 +861,12 @@ class RanchScene {
         for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
-        eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
-        eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
-        pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
-        pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
-        pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
+        // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
+        // eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
+        // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
+        // pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
+        // pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
+        fruitSpawnerFactory(this)
         playerFactory(this)
         this.setupControls()
     }
