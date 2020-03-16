@@ -62,7 +62,7 @@ Breeding Mechanics:
     - dominant color is at 25, remaining 6 colors are randomly rolled to be numbers between 1 and 20 inclusive--all 6 numbers added together should add up to 75
     - ex progenitor alot color stats: brown 25; red 10; blue 10; green 15; yellow 12; purple 16, pink 12
 - for baby alots:
-    - add together parents' stats by color and average. Top value becomes dominant, value snaps to 25. If top value was less than 25, it takes the needed stats from the lowest color. If above, it gives the extra to the lowest.
+    - add together parents' color stats by color and average. Top value becomes dominant, value snaps to 25. If top value was less than 25, it takes the needed stats from the lowest color. If above, it gives the extra to the lowest.
     - example: 
                Alot Parent 1 (brown)   Alot Parent 2 (red)     Average              Baby (purple)
     brown           25***                   5                   15                  15 
@@ -73,6 +73,8 @@ Breeding Mechanics:
     purple          16                      20                  18***               25***
     pink            12                      10                  11                  11
 
+    - generating new stats for baby alots:
+    - Average the parents' stats and add 1 to a random stat
 
 Digging overview:
 - player satisfaction: hopefully just fun on its own + prizes are food to affect alot status
