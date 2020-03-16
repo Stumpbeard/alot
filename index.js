@@ -96,6 +96,28 @@ let loadAnimations = () => {
         animations: brownAlotAnimations,
         frames: brownAlotFrames
     }
+
+    // baby brown alot
+    let babyBrownAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let babyBrownAlotFrames = []
+    for (let i = 0; i < babyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(babyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        babyBrownAlotFrames.push(canvas)
+    }
+    sheets['babyAlot'] = {
+        animations: babyBrownAlotAnimations,
+        frames: babyBrownAlotFrames
+    }
 }
 
 
@@ -213,7 +235,7 @@ let alotFactory = (scene) => {
         Math.floor(Math.random() * 6) + 1
     ]
 
-    let alotAI = (ent) => {
+    let alotAI = () => {
         let position = Position.get(ent)
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
@@ -223,10 +245,15 @@ let alotFactory = (scene) => {
         if (state.mating) {
             if (entAnimation.animation === 'found') {
                 let timer = Timer.get(ent)
+                let target = Target.get(ent)
                 timer.timer -= 1000 / 60
                 if (timer.timer <= 0) {
                     state.mating = false
                     Timer.delete(ent)
+                    let babyX = (position.x + target.x) / 2
+                    let babyY = (position.y + target.y) / 2
+                    babyAlotFactory(scene, babyX, babyY)
+                    Target.delete(ent)
                 }
                 return
             }
@@ -258,7 +285,6 @@ let alotFactory = (scene) => {
                 position.y < targetPos.y + 16 &&
                 position.y + 16 > targetPos.y) {
                 animation(ent, 'found', 250)
-                Target.delete(ent)
                 timer(ent, 3000)
             }
 
@@ -367,6 +393,59 @@ let alotFactory = (scene) => {
     animation(ent, 'idle', 500)
     parentScene(ent, scene)
     state(ent)
+    scene.world.add(ent)
+
+    return ent
+}
+
+let babyAlotFactory = (scene, x, y) => {
+    let ent = Entity()
+
+    let randomAtr = () => [
+        NAMES[Math.floor(Math.random() * NAMES.length)],
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
+    ]
+
+    let babyAI = () => {
+        let timer = Timer.get(ent)
+        let position = Position.get(ent)
+        let attributes = Attributes.get(ent)
+        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+        let decision = Math.floor(Math.random() * 20)
+        if (decision < 19) return
+        let dir = Math.floor(Math.random() * 4)
+        switch (dir) {
+            case 0:
+                position.x -= velocity
+                break
+            case 1:
+                position.x += velocity
+                break
+            case 2:
+                position.y -= velocity
+                break
+            case 3:
+                position.y += velocity
+                break
+        }
+        if (position.x < 0) position.x = 0
+        if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
+        if (position.y < 0) position.y = 0
+        if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
+
+        timer.timer -= 1000 / 60
+        if (timer.timer < 0) timer.timer = 0
+    }
+
+    ai(ent, babyAI)
+    position(ent, x, y)
+    image(ent, 'babyAlot')
+    attributes(ent, ...randomAtr())
+    animation(ent, 'idle', 500)
+    timer(ent, 60000)
     scene.world.add(ent)
 
     return ent
@@ -675,7 +754,7 @@ let AISystem = (scene) => {
         let ai = AI.get(entity)
         let state = State.get(entity)
         if (!ai || (state && state.hidden)) return
-        ai.ai(entity)
+        ai.ai()
     });
 }
 
