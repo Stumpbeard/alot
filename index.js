@@ -223,7 +223,7 @@ let bgDigFactory = (scene) => {
 }
 
 
-let alotFactory = (scene) => {
+let alotFactory = (scene, attr, x, y) => {
     let ent = Entity()
 
     let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
@@ -237,6 +237,8 @@ let alotFactory = (scene) => {
 
     let alotAI = () => {
         let position = Position.get(ent)
+        if (ent === 13)
+            console.log(position)
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
         let entAnimation = Animation.get(ent)
@@ -384,10 +386,19 @@ let alotFactory = (scene) => {
             }
         });
     }
-    position(ent, ...randomXY())
+    if (!x || !y) {
+        position(ent, ...randomXY())
+    } else {
+        position(ent, x, y)
+        console.log(Position.get(ent))
+    }
     ai(ent, alotAI)
     inputHandler(ent, handler)
-    attributes(ent, ...randomAtr())
+    if (!attr) {
+        attributes(ent, ...randomAtr())
+    } else {
+        attributes(ent, attr.name, attr.speed.natural, attr.endurance.natural, attr.focus.natural, attr.spunk.natural)
+    }
     status(ent)
     image(ent, 'alot')
     animation(ent, 'idle', 500)
@@ -414,6 +425,14 @@ let babyAlotFactory = (scene, x, y) => {
         let position = Position.get(ent)
         let attributes = Attributes.get(ent)
         let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+
+        timer.timer -= 1000 / 60
+        if (timer.timer < 0) {
+            alotFactory(scene, attributes, position.x, position.y)
+            removeEntity(ent)
+            return
+        }
+
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
         let dir = Math.floor(Math.random() * 4)
@@ -436,8 +455,6 @@ let babyAlotFactory = (scene, x, y) => {
         if (position.y < 0) position.y = 0
         if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
 
-        timer.timer -= 1000 / 60
-        if (timer.timer < 0) timer.timer = 0
     }
 
     ai(ent, babyAI)
@@ -445,7 +462,7 @@ let babyAlotFactory = (scene, x, y) => {
     image(ent, 'babyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
-    timer(ent, 60000)
+    timer(ent, 3000)
     scene.world.add(ent)
 
     return ent
