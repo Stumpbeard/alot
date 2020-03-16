@@ -193,19 +193,91 @@ let fruitSpawnerFactory = (scene) => {
     return ent
 }
 
+let geneticSimulator = (ent1, ent2) => {
+    let genes1 = Genetics.get(ent1)
+    let genes2 = Genetics.get(ent2)
 
+    let childGenes = {
+        brown: (genes1.brown + genes2.brown) / 2,
+        red: (genes1.red + genes2.red) / 2,
+        blue: (genes1.blue + genes2.blue) / 2,
+        green: (genes1.green + genes2.green) / 2,
+        yellow: (genes1.yellow + genes2.yellow) / 2,
+        purple: (genes1.purple + genes2.purple) / 2,
+        pink: (genes1.pink + genes2.pink) / 2,
+    }
+
+    let topColor = 'brown'
+    let topColorValue = 0
+    for (const colorKey in childGenes) {
+        if (childGenes.hasOwnProperty(colorKey)) {
+            const colorValue = childGenes[colorKey];
+            if (colorValue > topColorValue) {
+                topColor = colorKey
+                topColorValue = colorValue
+            }
+        }
+    }
+
+    let geneArray = [
+        childGenes.brown,
+        childGenes.brown + childGenes.red,
+        childGenes.brown + childGenes.red + childGenes.blue,
+        childGenes.brown + childGenes.red + childGenes.blue + childGenes.green,
+        childGenes.brown + childGenes.red + childGenes.blue + childGenes.green + childGenes.yellow,
+        childGenes.brown + childGenes.red + childGenes.blue + childGenes.green + childGenes.yellow + childGenes.purple,
+        childGenes.brown + childGenes.red + childGenes.blue + childGenes.green + childGenes.yellow + childGenes.purple + childGenes.pink,
+    ]
+
+    let geneRoll = Math.floor(Math.random() * 100)
+    let rolledGene = 6
+    for(let i = 0; i < 7; ++i) {
+        if (geneRoll < geneArray[i]) {
+            rolledGene = i
+            break
+        }
+    }
+    switch(rolledGene) {
+        case 0:
+            rolledColor = 'brown'
+            break
+        case 1:
+            rolledColor = 'red'
+            break
+        case 2:
+            rolledColor = 'blue'
+            break
+        case 3:
+            rolledColor = 'green'
+            break
+        case 4:
+            rolledColor = 'yellow'
+            break
+        case 5:
+            rolledColor = 'purple'
+            break
+        case 6:
+            rolledColor = 'pink'
+            break
+    }
+    let temp = childGenes[topColor]
+    childGenes[topColor] = childGenes[rolledColor]
+    childGenes[rolledColor] = temp
+
+    return childGenes
+}
 
 let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     let ent = Entity()
     if (!geneticsProfile) {
         geneticsProfile = {
-            brown: 25,
-            red: 75 / 6,
-            blue: 75 / 6,
-            green: 75 / 6,
-            yellow: 75 / 6,
-            purple: 75 / 6,
-            pink: 75 / 6,
+            brown: 30,
+            red: 70 / 6,
+            blue: 70 / 6,
+            green: 70 / 6,
+            yellow: 70 / 6,
+            purple: 70 / 6,
+            pink: 70 / 6,
         }
     }
     let color = 'brown'
@@ -244,13 +316,13 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
                 let target = Target.get(ent)
                 timer.timer -= 1000 / 60
                 if (timer.timer <= 0) {
-                    Target.delete(ent)
                     state.mating = false
                     Timer.delete(ent)
                     if (status.status[0] === 'horny') {
                         let babyX = (position.x + target.x) / 2 + Math.floor(Math.random() * 32) - 16
                         let babyY = (position.y + target.y) / 2 + Math.floor(Math.random() * 32) - 16
-                        babyAlotFactory(scene, babyX, babyY)
+                        let babyGene = geneticSimulator(ent, target.ent)
+                        babyAlotFactory(scene, babyX, babyY, babyGene)
                         status.status = []
                         scene.world.forEach(otherEnt => {
                             let entTarget = Target.get(otherEnt)
@@ -261,6 +333,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
                             }
                         });
                     }
+                    Target.delete(ent)
                 }
                 return
             }
@@ -418,13 +491,13 @@ let babyAlotFactory = (scene, x, y, geneticsProfile) => {
     let ent = Entity()
     if (!geneticsProfile) {
         geneticsProfile = {
-            brown: 25,
-            red: 75 / 6,
-            blue: 75 / 6,
-            green: 75 / 6,
-            yellow: 75 / 6,
-            purple: 75 / 6,
-            pink: 75 / 6,
+            brown: 30,
+            red: 70 / 6,
+            blue: 70 / 6,
+            green: 70 / 6,
+            yellow: 70 / 6,
+            purple: 70 / 6,
+            pink: 70 / 6,
         }
     }
     let color = 'brown'
@@ -453,10 +526,11 @@ let babyAlotFactory = (scene, x, y, geneticsProfile) => {
         let position = Position.get(ent)
         let attributes = Attributes.get(ent)
         let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+        let genes = Genetics.get(ent)
 
         timer.timer -= 1000 / 60
         if (timer.timer < 0) {
-            alotFactory(scene, attributes, position.x, position.y)
+            alotFactory(scene, attributes, position.x, position.y, genes)
             removeEntity(ent)
             return
         }
