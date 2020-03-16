@@ -19,6 +19,11 @@ for (let i = 0; i < 10; ++i) {
     }
 }
 
+// Audio
+let ranchMusic = document.createElement('audio')
+ranchMusic.src = "sounds/ranch-music.mp3"
+ranchMusic.loop = true
+
 // Main function
 let main = (timestamp) => {
     window.requestAnimationFrame(main)
@@ -748,6 +753,7 @@ let playerFactory = (scene) => {
             }
             switch (ev.type) {
                 case 'click':
+                    if (ranchMusic.paused) ranchMusic.play()
                     for (const key in scene.buttons) {
                         if (scene.buttons.hasOwnProperty(key)) {
                             const button = scene.buttons[key];
@@ -911,6 +917,7 @@ class RanchScene {
         this.w = WIDTH
         this.h = HEIGHT
         document.body.appendChild(this.canvas)
+        document.body.appendChild(ranchMusic)
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
         this.buttons = {
