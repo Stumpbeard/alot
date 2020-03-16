@@ -3,6 +3,12 @@
 - digging
 - racing
 
+Game initialization:
+- player starts with 3 alots - 1 male, 1 female, 1 random
+- starting alots stats are initialized to be between 1 and 6 (inclusive) each
+- 2 starting alots are regular/brown, one is green 
+- no statuses on starting alots. also no items in inventory.
+
 
 Breeding & Management overview
 - player satisfaction: collect more colors of alots
@@ -42,8 +48,30 @@ Breeding & Management overview
         - always removes horny status
         - babies only result from male + female alots when the female is horny
         - gay alot breeding gives stat boost for racing or digging
+            - 50-50 chance to get competitive or curious status
     - feeding:
         - can feed an alot up to two things per time cycle
+
+Breeding Mechanics:
+- Alots have genes for each possible color (regular, red, blue, green, yellow, purple, pink)
+- Strength of genes is represented by numbers that add up to 100 across all genes
+- Each alot has a dominant color with a gene value of 25. This is what color they are in-game.
+- the other colors are determined by their parents for bred alots
+- for progenitor alots:
+    - dominant color is at 25, remaining 6 colors are randomly rolled to be numbers between 1 and 20 inclusive--all 6 numbers added together should add up to 75
+    - ex progenitor alot color stats: brown 25; red 10; blue 10; green 15; yellow 12; purple 16, pink 12
+- for baby alots:
+    - add together parents' stats by color and average. Top value becomes dominant, value snaps to 25. If top value was less than 25, it takes the needed stats from the lowest color. If above, it gives the extra to the lowest.
+    - example: 
+               Alot Parent 1 (brown)   Alot Parent 2 (red)     Average              Baby (purple)
+    brown           25***                   5                   15                  15 
+    red             10                      25***               17.5                17.5
+    blue            10                      20                  15                  15
+    green           15                      6                   10.5                3.5
+    yellow          12                      14                  13                  13
+    purple          16                      20                  18***               25***
+    pink            12                      10                  11                  11
+
 
 Digging overview:
 - player satisfaction: hopefully just fun on its own + prizes are food to affect alot status
@@ -58,6 +86,9 @@ Digging overview:
         - "mrrRROOH!" = just barely missing it
         - "MRRRROOH!!" = yay found it 
 
+
+
+
 Racing overview
 - player satisfaction: winning feels nice + prizes are love potions that increase chances of specific color of alot baby 
     - ex: pink love potion = better chance to get pink alot from breeding
@@ -66,12 +97,17 @@ Racing overview
 - mechanics: 
 
 
+
+
+
 Items:
-- affect breeding:
-    - pineapple: spunk + 2 until next turn
-    - eggplant: makes alot horny 
-    - carrot: focus + 2 until next turn
-    - apple: endurance + 2 until next turn
+- pineapple: spunk + 2 until next turn
+- eggplant: makes alot horny 
+- carrot: focus + 2 until next turn
+- apple: endurance + 2 until next turn
+
+
+
 
 Notes on Animations:
 - alot:
