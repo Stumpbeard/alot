@@ -794,7 +794,11 @@ let playerFactory = (scene) => {
             }
             switch (ev.type) {
                 case 'click':
-                    if (ranchMusic.paused) ranchMusic.play()
+                    if (scene.menuState === 'title') {
+                        scene.menuState = 'default'
+                        ranchMusic.play()
+                        return
+                    }
                     for (const key in scene.buttons) {
                         if (scene.buttons.hasOwnProperty(key)) {
                             const button = scene.buttons[key];
@@ -870,6 +874,11 @@ let RenderSystem = (scene) => {
         scene.canvas.style = `width: ${WIDTH * SCALE}px; max-width: 100%;`
     } else {
         scene.canvas.style = `height: ${HEIGHT * SCALE}px; max-height: 100%;`
+    }
+
+    if (scene.menuState === 'title') {
+        scene.context.drawImage(images['titleScreen'], 0, 0)
+        return
     }
 
     let drawQueue = []
@@ -949,7 +958,7 @@ class RanchScene {
         this.y = 0
         this.currentAlot = undefined
         this.selectedAlots = [undefined, undefined]
-        this.menuState = 'default'
+        this.menuState = 'title'
         this.canvas = document.createElement('canvas', { alpha: false })
         this.eventQueue = []
         this.canvas.id = 'main-viewport'
@@ -1037,16 +1046,16 @@ class RanchScene {
         }
         if (this.currentAlot) {
             drawWhiteText(this.context, this.currentAlot.name, WIDTH - 32 - (this.currentAlot.name.length / 2 * 8), 4)
-            this.context.fillStyle = 'green'
-            this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
-            this.context.fillStyle = 'red'
-            this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
-            this.context.fillStyle = 'blue'
-            this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
-            this.context.fillStyle = 'pink'
-            this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
-            this.context.fillStyle = 'purple'
-            this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
+            // this.context.fillStyle = 'green'
+            // this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
+            // this.context.fillStyle = 'red'
+            // this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
+            // this.context.fillStyle = 'blue'
+            // this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
+            // this.context.fillStyle = 'pink'
+            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
+            // this.context.fillStyle = 'purple'
+            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
 
             if (this.selectedAlots[0]) {
                 this.context.fillStyle = 'white'

@@ -84,3 +84,7 @@ images['buttonX'] = buttonXImage
 let statusHornyImage = new Image()
 statusHornyImage.src = 'images/status-horny.png'
 images['statusHorny'] = statusHornyImage
+
+let titleScreenImage = new Image()
+titleScreenImage.src = 'images/title-screen.png'
+images['titleScreen'] = titleScreenImage
