@@ -174,8 +174,8 @@ let fruitSpawnerFactory = (scene) => {
                 if (Bonus.get(ent)) existingItems += 1
             });
             if (existingItems < 10) {
-                let x = Math.floor(Math.random() * scene.w - 64 - 8)
-                let y = Math.floor(Math.random() * scene.h - 8)
+                let x = Math.floor(Math.random() * (scene.w - 64 - 8))
+                let y = Math.floor(Math.random() * (scene.h - 8))
                 eggplantFactory(scene, x, y)    
             }
             timer(ent, 15000)
@@ -408,7 +408,7 @@ let babyAlotFactory = (scene, x, y, color) => {
 
         timer.timer -= 1000 / 60
         if (timer.timer < 0) {
-            alotFactory(scene, attributes, position.x, position.y)
+            alotFactory(scene, attributes, position.x, position.y, color)
             removeEntity(ent)
             return
         }
