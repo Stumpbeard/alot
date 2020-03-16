@@ -50,8 +50,9 @@ let State = new Component()
 let Anchor = new Component()
 let Bonus = new Component()
 let Timer = new Component()
+let Genetics = new Component()
 
-let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus]
+let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus, Timer, Genetics]
 let removeEntity = (ent) => {
     components.forEach(component => {
         component.delete(ent)
@@ -390,6 +391,7 @@ let babyAlotFactory = (scene, x, y, color) => {
     let ent = Entity()
     if (!color) color = 'brown'
 
+    let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
         NAMES[Math.floor(Math.random() * NAMES.length)],
         Math.floor(Math.random() * 6) + 1,
@@ -436,7 +438,11 @@ let babyAlotFactory = (scene, x, y, color) => {
     }
 
     ai(ent, babyAI)
-    position(ent, x, y)
+    if (!x || !y) {
+        position(ent, ...randomXY())
+    } else {
+        position(ent, x, y)
+    }
     image(ent, color + 'BabyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
@@ -829,6 +835,14 @@ class RanchScene {
         alotFactory(this, undefined, undefined, undefined, 'yellow')
         alotFactory(this, undefined, undefined, undefined, 'purple')
         alotFactory(this, undefined, undefined, undefined, 'pink')
+
+        babyAlotFactory(this, undefined, undefined, 'brown')
+        babyAlotFactory(this, undefined, undefined, 'blue')
+        babyAlotFactory(this, undefined, undefined, 'green')
+        babyAlotFactory(this, undefined, undefined, 'yellow')
+        babyAlotFactory(this, undefined, undefined, 'red')
+        babyAlotFactory(this, undefined, undefined, 'purple')
+        babyAlotFactory(this, undefined, undefined, 'pink')
         // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
         eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
         // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)

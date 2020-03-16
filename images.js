@@ -37,6 +37,26 @@ let redBabyAlotSheet = new Image()
 redBabyAlotSheet.src = 'images/baby-alot-red-sheet.png'
 images['redBabyAlot'] = redBabyAlotSheet
 
+let blueBabyAlotSheet = new Image()
+blueBabyAlotSheet.src = 'images/baby-alot-blue-sheet.png'
+images['blueBabyAlot'] = blueBabyAlotSheet
+
+let greenBabyAlotSheet = new Image()
+greenBabyAlotSheet.src = 'images/baby-alot-green-sheet.png'
+images['greenBabyAlot'] = greenBabyAlotSheet
+
+let yellowBabyAlotSheet = new Image()
+yellowBabyAlotSheet.src = 'images/baby-alot-yellow-sheet.png'
+images['yellowBabyAlot'] = yellowBabyAlotSheet
+
+let purpleBabyAlotSheet = new Image()
+purpleBabyAlotSheet.src = 'images/baby-alot-purple-sheet.png'
+images['purpleBabyAlot'] = purpleBabyAlotSheet
+
+let pinkBabyAlotSheet = new Image()
+pinkBabyAlotSheet.src = 'images/baby-alot-pink-sheet.png'
+images['pinkBabyAlot'] = pinkBabyAlotSheet
+
 let foodEggplantImage = new Image()
 foodEggplantImage.src = 'images/food-eggplant.png'
 images['foodEggplant'] = foodEggplantImage

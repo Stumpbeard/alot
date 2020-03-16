@@ -210,4 +210,114 @@ let loadAnimations = () => {
         animations: redBabyAlotAnimations,
         frames: redBabyAlotFrames
     }
+
+    // baby blue alot
+    let blueBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let blueBabyAlotFrames = []
+    for (let i = 0; i < blueBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(blueBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        blueBabyAlotFrames.push(canvas)
+    }
+    sheets['blueBabyAlot'] = {
+        animations: blueBabyAlotAnimations,
+        frames: blueBabyAlotFrames
+    }
+
+    // baby green alot
+    let greenBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let greenBabyAlotFrames = []
+    for (let i = 0; i < greenBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(greenBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        greenBabyAlotFrames.push(canvas)
+    }
+    sheets['greenBabyAlot'] = {
+        animations: greenBabyAlotAnimations,
+        frames: greenBabyAlotFrames
+    }
+
+    // baby yellow alot
+    let yellowBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let yellowBabyAlotFrames = []
+    for (let i = 0; i < yellowBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(yellowBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        yellowBabyAlotFrames.push(canvas)
+    }
+    sheets['yellowBabyAlot'] = {
+        animations: yellowBabyAlotAnimations,
+        frames: yellowBabyAlotFrames
+    }
+
+    // baby purple alot
+    let purpleBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let purpleBabyAlotFrames = []
+    for (let i = 0; i < purpleBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(purpleBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        purpleBabyAlotFrames.push(canvas)
+    }
+    sheets['purpleBabyAlot'] = {
+        animations: purpleBabyAlotAnimations,
+        frames: purpleBabyAlotFrames
+    }
+
+    // baby pink alot
+    let pinkBabyAlotAnimations = {
+        idle: [0, 1],
+        selected: [2],
+        walk: [3, 4, 5, 6],
+    }
+    let pinkBabyAlotFrames = []
+    for (let i = 0; i < pinkBabyAlotSheet.naturalWidth; i += 32) {
+        let canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+        let ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, 32, 32)
+        ctx.drawImage(pinkBabyAlotSheet, i, 0, 32, 32, 0, 0, 32, 32)
+        pinkBabyAlotFrames.push(canvas)
+    }
+    sheets['pinkBabyAlot'] = {
+        animations: pinkBabyAlotAnimations,
+        frames: pinkBabyAlotFrames
+    }
 }
