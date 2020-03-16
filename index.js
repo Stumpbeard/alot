@@ -207,8 +207,15 @@ let alotFactory = (scene) => {
         let position = Position.get(ent)
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
+        let entAnimation = Animation.get(ent)
 
-        if (state.hovered) return
+        if (state.clicked) {
+            animation(ent, 'selected', 500)
+        } else {
+            if (entAnimation.animation !== 'idle') animation(ent, 'idle', 500)
+        }
+
+        if (state.hovered || state.clicked) return
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
         let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
@@ -232,8 +239,34 @@ let alotFactory = (scene) => {
         if (position.y < 0) position.y = 0
         if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
     }
+
+    let handler = (queue) => {
+        let position = Position.get(ent)
+        let state = State.get(ent)
+        queue.forEach(ev => {
+            let mousePos = {
+                x: Math.floor(ev.localX),
+                y: Math.floor(ev.localY)
+            }
+            switch (ev.type) {
+                case 'click':
+                    if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
+                        state.clicked = !state.clicked
+                        if (state.clicked) {
+                            scene.world.forEach(otherEnt => {
+                                if (otherEnt === ent) return
+                                let state = State.get(otherEnt)
+                                if (state) state.clicked = false
+                            });
+                        }
+                    }
+                    break
+            }
+        });
+    }
     position(ent, ...randomXY())
     ai(ent, alotAI)
+    inputHandler(ent, handler)
     attributes(ent, ...randomAtr())
     status(ent)
     image(ent, 'alot')
@@ -552,15 +585,6 @@ class RanchScene {
         this.world = new Registry();
         this.x = 0
         this.y = 0
-        this.mousedown = false
-        this.clicked = {
-            x: 0,
-            y: 0
-        }
-        this.mousePos = {
-            x: 0,
-            y: 0
-        }
         this.currentAlot = undefined
         this.menuState = 'default'
         this.canvas = document.createElement('canvas', { alpha: false })
@@ -574,20 +598,20 @@ class RanchScene {
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
         this.buttons = {
-            dig: {
+            mate: {
                 x: 196,
                 y: 120,
                 w: 56,
                 h: 8,
-                state: 'dig',
+                state: 'mate',
                 showItems: false
             },
-            race: {
+            rest: {
                 x: 196,
                 y: 130,
                 w: 56,
                 h: 8,
-                state: 'race',
+                state: 'rest',
                 showItems: false
             },
             x: {
@@ -629,6 +653,11 @@ class RanchScene {
         this.context.fillStyle = 'black'
         this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
 
+        this.world.forEach(ent => {
+            let attributes = Attributes.get(ent)
+            let state = State.get(ent)
+            if (attributes && state && state.clicked) this.currentAlot = attributes
+        });
         if (this.currentAlot) {
             drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
             this.context.fillStyle = 'green'
@@ -654,7 +683,15 @@ class RanchScene {
             this.context.fillStyle = 'black'
             this.context.fillRect(197, 121, 54, 6)
             this.context.fillRect(197, 131, 54, 6)
-        } else if (this.menuState === 'dig') {
+        } else if (this.menuState === 'mate') {
+            this.context.fillStyle = 'white'
+            this.context.fillRect(196, 120, 12, 8)
+            this.context.fillRect(240, 120, 12, 8)
+            this.context.fillStyle = 'black'
+            this.context.fillRect(197, 131, 54, 6)
+            this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
+            this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
+        } else if (this.menuState === 'mate') {
             this.context.fillStyle = 'white'
             this.context.fillRect(196, 120, 12, 8)
             this.context.fillRect(240, 120, 12, 8)
@@ -663,14 +700,14 @@ class RanchScene {
             this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
             this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
         }
-        drawWhiteText(this.context, 'DIG', 212, 120)
-        drawWhiteText(this.context, 'RACE', 208, 130)
+        drawWhiteText(this.context, 'MATE', 208, 120)
+        drawWhiteText(this.context, 'REST', 208, 130)
 
 
         let x = 208
         let y = 144
         let numBoxes = 10
-        if (this.menuState === 'dig') numBoxes = 4
+        if (this.menuState === 'mate') numBoxes = 2
         for (let i = 0; i < numBoxes; ++i) {
             this.context.fillStyle = 'white'
             this.context.fillRect(x, y, 16, 16)
@@ -764,7 +801,7 @@ class DigScene {
 
 let activeScene = []
 activeScene.push(new RanchScene())
-activeScene.unshift(new DigScene())
+    // activeScene.unshift(new DigScene())
 window.onload = () => {
     initializeFonts()
     loadAnimations()
