@@ -295,6 +295,7 @@ let alotFactory = (scene, attr, x, y) => {
         let position = Position.get(ent)
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
+        let status = Status.get(ent)
         let entAnimation = Animation.get(ent)
         let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
 
@@ -304,12 +305,23 @@ let alotFactory = (scene, attr, x, y) => {
                 let target = Target.get(ent)
                 timer.timer -= 1000 / 60
                 if (timer.timer <= 0) {
+                    Target.delete(ent)
                     state.mating = false
                     Timer.delete(ent)
-                    let babyX = (position.x + target.x) / 2
-                    let babyY = (position.y + target.y) / 2
-                    babyAlotFactory(scene, babyX, babyY)
-                    Target.delete(ent)
+                    if (status.status[0] === 'horny') {
+                        let babyX = (position.x + target.x) / 2 + Math.floor(Math.random() * 32) - 16
+                        let babyY = (position.y + target.y) / 2 + Math.floor(Math.random() * 32) - 16
+                        babyAlotFactory(scene, babyX, babyY)
+                        status.status = []
+                        scene.world.forEach(otherEnt => {
+                            let entTarget = Target.get(otherEnt)
+                            let entAttr = Attributes.get(otherEnt)
+                            if (!entTarget) return
+                            if (entTarget.ent === ent && !entAttr) {
+                                removeEntity(otherEnt)
+                            }
+                        });
+                    }
                 }
                 return
             }
@@ -602,15 +614,15 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
                     if (state.clicked) {
                         targetToBonus = undefined
                         targetY = -1
-                        scene.world.forEach(ent => {
-                            let entPosition = Position.get(ent)
-                            let entAttributes = Attributes.get(ent)
-                            let entStatus = Status.get(ent)
+                        scene.world.forEach(targetEnt => {
+                            let entPosition = Position.get(targetEnt)
+                            let entAttributes = Attributes.get(targetEnt)
+                            let entStatus = Status.get(targetEnt)
                             if (!entPosition || !entAttributes || !entStatus) return
                             if (mousePos.x >= entPosition.x && mousePos.x < entPosition.x + 32 && mousePos.y >= entPosition.y && mousePos.y < entPosition.y + 32) {
                                 if (entPosition.y > targetY) {
                                     targetY = entPosition.y
-                                    targetToBonus = { attributes: entAttributes, status: entStatus, ent: ent }
+                                    targetToBonus = { attributes: entAttributes, status: entStatus, ent: targetEnt }
                                 }
                             }
                         });
@@ -624,7 +636,8 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
                                 }
                             }
                             if (bonus.status) {
-                                targetToBonus.status.status.concat(bonus.status)
+                                let targetStatus = Status.get(targetToBonus.ent)
+                                targetToBonus.status.status = bonus.status
                                 statusHornyFactory(scene, targetToBonus.ent)
                             }
                             removeEntity(ent)
