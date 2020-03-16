@@ -237,8 +237,6 @@ let alotFactory = (scene, attr, x, y) => {
 
     let alotAI = () => {
         let position = Position.get(ent)
-        if (ent === 13)
-            console.log(position)
         let attributes = Attributes.get(ent)
         let state = State.get(ent)
         let entAnimation = Animation.get(ent)
@@ -390,7 +388,6 @@ let alotFactory = (scene, attr, x, y) => {
         position(ent, ...randomXY())
     } else {
         position(ent, x, y)
-        console.log(Position.get(ent))
     }
     ai(ent, alotAI)
     inputHandler(ent, handler)
