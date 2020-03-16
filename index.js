@@ -462,7 +462,7 @@ let babyAlotFactory = (scene, x, y) => {
     image(ent, 'babyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
-    timer(ent, 3000)
+    timer(ent, 60000)
     scene.world.add(ent)
 
     return ent
