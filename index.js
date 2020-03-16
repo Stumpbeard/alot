@@ -670,9 +670,10 @@ let playerFactory = (scene) => {
                             if (mousePos.x >= button.x && mousePos.x < button.x + button.w && mousePos.y >= button.y && mousePos.y < button.y + button.h) {
                                 scene.menuState = button.state
                                 scene.world.forEach(ent => {
+                                    let entPos = Position.get(ent)
                                     let state = State.get(ent)
                                     let bonus = Bonus.get(ent)
-                                    if (state && bonus) {
+                                    if (state && bonus && entPos && entPos.x > scene.w - 64) {
                                         state.hidden = !button.showItems
                                     }
                                 });
