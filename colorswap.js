@@ -1,8 +1,35 @@
+//first blocks
 //red alot
 let redAlotSheet = new Image()
 redAlotSheet.src = 'images/alotofred-sheet.png'
 images['redAlot'] = redAlotSheet
 
+//blue alot
+let blueAlotSheet = new Image()
+blueAlotSheet.src = 'images/alotofblue-sheet.png'
+images['blueAlot'] = blueAlotSheet
+
+//green alot
+let greenAlotSheet = new Image()
+greenAlotSheet.src = 'images/alotofgreen-sheet.png'
+images['greenAlot'] = greenAlotSheet
+
+//yellow alot
+let yellowAlotSheet = new Image()
+yellowAlotSheet.src = 'images/alotofyellow-sheet.png'
+images['yellowAlot'] = yellowAlotSheet
+
+//purple alot
+let purpleAlotSheet = new Image()
+purpleAlotSheet.src = 'images/alotofpurple-sheet.png'
+images['purpleAlot'] = purpleAlotSheet
+
+//pink alot
+let pinkAlotSheet = new Image()
+pinkAlotSheet.src = 'images/alotofpink-sheet.png'
+images['pinkAlot'] = pinkAlotSheet
+
+//second blocks
 // red alot
 let redAlotAnimations = {
     idle: [0, 1],
@@ -26,11 +53,6 @@ sheets['redAlot'] = {
     animations: redAlotAnimations,
     frames: redAlotFrames
 }
-
-//blue alot
-let blueAlotSheet = new Image()
-blueAlotSheet.src = 'images/alotofblue-sheet.png'
-images['blueAlot'] = blueAlotSheet
 
 // blue alot
 let blueAlotAnimations = {
@@ -56,11 +78,6 @@ sheets['blueAlot'] = {
     frames: blueAlotFrames
 }
 
-//green alot
-let greenAlotSheet = new Image()
-greenAlotSheet.src = 'images/alotofgreen-sheet.png'
-images['greenAlot'] = greenAlotSheet
-
 // green alot
 let greenAlotAnimations = {
     idle: [0, 1],
@@ -84,11 +101,6 @@ sheets['greenAlot'] = {
     animations: greenAlotAnimations,
     frames: greenAlotFrames
 }
-
-//yellow alot
-let yellowAlotSheet = new Image()
-yellowAlotSheet.src = 'images/alotofyellow-sheet.png'
-images['yellowAlot'] = yellowAlotSheet
 
 // yellow alot
 let yellowAlotAnimations = {
@@ -114,11 +126,6 @@ sheets['yellowAlot'] = {
     frames: yellowAlotFrames
 }
 
-//purple alot
-let purpleAlotSheet = new Image()
-purpleAlotSheet.src = 'images/alotofpurple-sheet.png'
-images['purpleAlot'] = purpleAlotSheet
-
 // purple alot
 let purpleAlotAnimations = {
     idle: [0, 1],
@@ -142,11 +149,6 @@ sheets['purpleAlot'] = {
     animations: purpleAlotAnimations,
     frames: purpleAlotFrames
 }
-
-//pink alot
-let pinkAlotSheet = new Image()
-pinkAlotSheet.src = 'images/alotofpink-sheet.png'
-images['pinkAlot'] = pinkAlotSheet
 
 // pink alot
 let pinkAlotAnimations = {
