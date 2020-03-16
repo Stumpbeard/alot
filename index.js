@@ -376,16 +376,56 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             return
         }
 
-        if (state.clicked) {
-            animation(ent, 'selected', 500)
-        } else {
-            if (entAnimation.animation !== 'idle') animation(ent, 'idle', 500)
+        let entTimer = Timer.get(ent)
+
+        if (entTimer) {
+            entTimer.timer -= 1000 / 60
+            if (entTimer.timer <= 0) {
+                Timer.delete(ent)
+                Target.delete(ent)
+            }
         }
 
+        if (state.clicked) {
+            animation(ent, 'selected', 500)
+            return
+        }
+        
+        let entTarget = Target.get(ent)
+
+        if (entTarget) {
+            if (entAnimation.animation !== 'walk') {
+                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+            }
+            let averageX = Math.abs(position.x - entTarget.x) / 2
+            let averageY = Math.abs(position.y - entTarget.y) / 2
+            if (averageX >= averageY) {
+                if (position.x < entTarget.x) {
+                    position.x += velocity
+                } else {
+                    position.x -= velocity
+                }
+            } else if (averageX < averageY) {
+                if (position.y < entTarget.y) {
+                    position.y += velocity
+                } else {
+                    position.y -= velocity
+                }
+            }
+
+            if (position.x < 0) position.x = 0
+            if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
+            if (position.y < 0) position.y = 0
+            if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
+    
+            return
+        }
+
+        if (entAnimation.animation !== 'idle') animation(ent, 'idle', 500)
         if (state.hovered || state.clicked) return
         let decision = Math.floor(Math.random() * 20)
         if (decision < 19) return
-        let dir = Math.floor(Math.random() * 4)
+        let dir = Math.floor(Math.random() * 5)
         switch (dir) {
             case 0:
                 position.x -= velocity
@@ -399,11 +439,12 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             case 3:
                 position.y += velocity
                 break
+            case 4:
+                timer(ent, (Math.floor(Math.random() * 3) + 1) * 1000)
+                target(ent, Math.floor(Math.random() * (WIDTH - 96)), Math.floor(Math.random() * (HEIGHT - 32)))
+                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+                break
         }
-        if (position.x < 0) position.x = 0
-        if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
-        if (position.y < 0) position.y = 0
-        if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
     }
 
     let handler = (queue) => {
