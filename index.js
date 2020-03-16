@@ -91,6 +91,10 @@ let attributes = (entity, name, spd, end, fcs, spk, sex) => {
     })
 }
 
+let genetics = (entity, genetics) => {
+    Genetics.set(entity, genetics)
+}
+
 let status = (entity) => {
     Status.set(entity, { status: [] })
 }
@@ -190,9 +194,31 @@ let fruitSpawnerFactory = (scene) => {
 }
 
 
-let alotFactory = (scene, attr, x, y, color) => {
+
+let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     let ent = Entity()
-    if (!color) color = 'brown'
+    if (!geneticsProfile) {
+        geneticsProfile = {
+            brown: 25,
+            red: 75 / 6,
+            blue: 75 / 6,
+            green: 75 / 6,
+            yellow: 75 / 6,
+            purple: 75 / 6,
+            pink: 75 / 6,
+        }
+    }
+    let color = 'brown'
+    let topColorValue = 0
+    for (const colorKey in geneticsProfile) {
+        if (geneticsProfile.hasOwnProperty(colorKey)) {
+            const colorValue = geneticsProfile[colorKey];
+            if (colorValue > topColorValue) {
+                color = colorKey
+                topColorValue = colorValue
+            }
+        }
+    }
 
     let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
@@ -382,14 +408,36 @@ let alotFactory = (scene, attr, x, y, color) => {
     animation(ent, 'idle', 500)
     parentScene(ent, scene)
     state(ent)
+    genetics(ent, geneticsProfile)
     scene.world.add(ent)
 
     return ent
 }
 
-let babyAlotFactory = (scene, x, y, color) => {
+let babyAlotFactory = (scene, x, y, geneticsProfile) => {
     let ent = Entity()
-    if (!color) color = 'brown'
+    if (!geneticsProfile) {
+        geneticsProfile = {
+            brown: 25,
+            red: 75 / 6,
+            blue: 75 / 6,
+            green: 75 / 6,
+            yellow: 75 / 6,
+            purple: 75 / 6,
+            pink: 75 / 6,
+        }
+    }
+    let color = 'brown'
+    let topColorValue = 0
+    for (const colorKey in geneticsProfile) {
+        if (geneticsProfile.hasOwnProperty(colorKey)) {
+            const colorValue = geneticsProfile[colorKey];
+            if (colorValue > topColorValue) {
+                color = colorKey
+                topColorValue = colorValue
+            }
+        }
+    }
 
     let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
     let randomAtr = () => [
@@ -408,7 +456,7 @@ let babyAlotFactory = (scene, x, y, color) => {
 
         timer.timer -= 1000 / 60
         if (timer.timer < 0) {
-            alotFactory(scene, attributes, position.x, position.y, color)
+            alotFactory(scene, attributes, position.x, position.y)
             removeEntity(ent)
             return
         }
@@ -446,6 +494,7 @@ let babyAlotFactory = (scene, x, y, color) => {
     image(ent, color + 'BabyAlot')
     attributes(ent, ...randomAtr())
     animation(ent, 'idle', 500)
+    genetics(ent, geneticsProfile)
     timer(ent, 60000)
     scene.world.add(ent)
 
@@ -829,20 +878,20 @@ class RanchScene {
         for (let i = 0; i < 3; ++i) {
             alotFactory(this)
         }
-        alotFactory(this, undefined, undefined, undefined, 'red')
-        alotFactory(this, undefined, undefined, undefined, 'blue')
-        alotFactory(this, undefined, undefined, undefined, 'green')
-        alotFactory(this, undefined, undefined, undefined, 'yellow')
-        alotFactory(this, undefined, undefined, undefined, 'purple')
-        alotFactory(this, undefined, undefined, undefined, 'pink')
+        // alotFactory(this, undefined, undefined, undefined, 'red')
+        // alotFactory(this, undefined, undefined, undefined, 'blue')
+        // alotFactory(this, undefined, undefined, undefined, 'green')
+        // alotFactory(this, undefined, undefined, undefined, 'yellow')
+        // alotFactory(this, undefined, undefined, undefined, 'purple')
+        // alotFactory(this, undefined, undefined, undefined, 'pink')
 
-        babyAlotFactory(this, undefined, undefined, 'brown')
-        babyAlotFactory(this, undefined, undefined, 'blue')
-        babyAlotFactory(this, undefined, undefined, 'green')
-        babyAlotFactory(this, undefined, undefined, 'yellow')
-        babyAlotFactory(this, undefined, undefined, 'red')
-        babyAlotFactory(this, undefined, undefined, 'purple')
-        babyAlotFactory(this, undefined, undefined, 'pink')
+        // babyAlotFactory(this, undefined, undefined, 'brown')
+        // babyAlotFactory(this, undefined, undefined, 'blue')
+        // babyAlotFactory(this, undefined, undefined, 'green')
+        // babyAlotFactory(this, undefined, undefined, 'yellow')
+        // babyAlotFactory(this, undefined, undefined, 'red')
+        // babyAlotFactory(this, undefined, undefined, 'purple')
+        // babyAlotFactory(this, undefined, undefined, 'pink')
         // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
         eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
         // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
