@@ -1153,10 +1153,10 @@ class RanchScene {
                 }
             }
         } else if (this.menuState === 'mate') {
-            this.context.fillStyle = 'white'
-            this.context.fillRect(216, 144, 16, 16)
-            this.context.fillStyle = 'black'
-            this.context.fillRect(216 + 1, 144 + 1, 14, 14)
+            // this.context.fillStyle = 'white'
+            // this.context.fillRect(216, 144, 16, 16)
+            // this.context.fillStyle = 'black'
+            // this.context.fillRect(216 + 1, 144 + 1, 14, 14)
         }
         RenderSystem(this)
         AnimationSystem(this)
