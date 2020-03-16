@@ -824,6 +824,11 @@ class RanchScene {
             alotFactory(this)
         }
         alotFactory(this, undefined, undefined, undefined, 'red')
+        alotFactory(this, undefined, undefined, undefined, 'blue')
+        alotFactory(this, undefined, undefined, undefined, 'green')
+        alotFactory(this, undefined, undefined, undefined, 'yellow')
+        alotFactory(this, undefined, undefined, undefined, 'purple')
+        alotFactory(this, undefined, undefined, undefined, 'pink')
         // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
         eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
         // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
