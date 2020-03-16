@@ -168,13 +168,14 @@ let ai = (entity, ai) => {
     AI.set(entity, { ai: ai })
 }
 
-let attributes = (entity, name, spd, end, fcs, spk) => {
+let attributes = (entity, name, spd, end, fcs, spk, sex) => {
     Attributes.set(entity, {
         name: name,
         speed: { natural: spd, bonus: 0 },
         endurance: { natural: end, bonus: 0 },
         focus: { natural: fcs, bonus: 0 },
-        spunk: { natural: spk, bonus: 0 }
+        spunk: { natural: spk, bonus: 0 },
+        sex: sex
     })
 }
 
@@ -234,16 +235,16 @@ let statusHornyFactory = (scene, targetEnt) => {
         let entTarget = Target.get(ent)
         let targetPos = Position.get(entTarget.ent)
         let entPos = Position.get(ent)
-        entPos.x = targetPos.x
+        entPos.x = targetPos.x + 3
         entPos.y = targetPos.y
     }
 
     let targetPos = Position.get(targetEnt)
 
     image(ent, 'statusHorny')
-    position(ent, targetPos.x, targetPos.y)
-    target(entity, undefined, undefined, targetEnt)
-    ai(entity, statusAI)
+    position(ent, targetPos.x + 3, targetPos.y)
+    target(ent, undefined, undefined, targetEnt)
+    ai(ent, statusAI)
     scene.world.add(ent)
 
     return ent
@@ -286,7 +287,8 @@ let alotFactory = (scene, attr, x, y) => {
         Math.floor(Math.random() * 6) + 1,
         Math.floor(Math.random() * 6) + 1,
         Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1
+        Math.floor(Math.random() * 6) + 1,
+        ((Math.floor(Math.random() * 2)) ? 'male' : 'female')
     ]
 
     let alotAI = () => {
@@ -448,7 +450,7 @@ let alotFactory = (scene, attr, x, y) => {
     if (!attr) {
         attributes(ent, ...randomAtr())
     } else {
-        attributes(ent, attr.name, attr.speed.natural, attr.endurance.natural, attr.focus.natural, attr.spunk.natural)
+        attributes(ent, attr.name, attr.speed.natural, attr.endurance.natural, attr.focus.natural, attr.spunk.natural, attr.sex)
     }
     status(ent)
     image(ent, 'alot')
@@ -608,7 +610,7 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
                             if (mousePos.x >= entPosition.x && mousePos.x < entPosition.x + 32 && mousePos.y >= entPosition.y && mousePos.y < entPosition.y + 32) {
                                 if (entPosition.y > targetY) {
                                     targetY = entPosition.y
-                                    targetToBonus = { attributes: entAttributes, status: entStatus }
+                                    targetToBonus = { attributes: entAttributes, status: entStatus, ent: ent }
                                 }
                             }
                         });
@@ -623,6 +625,7 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
                             }
                             if (bonus.status) {
                                 targetToBonus.status.status.concat(bonus.status)
+                                statusHornyFactory(scene, targetToBonus.ent)
                             }
                             removeEntity(ent)
                             return
@@ -895,7 +898,7 @@ class RanchScene {
             alotFactory(this)
         }
         // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
-        // eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
+        eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
         // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
         // pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
         // pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
