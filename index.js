@@ -243,6 +243,9 @@ let alotFactory = (scene) => {
     let handler = (queue) => {
         let position = Position.get(ent)
         let state = State.get(ent)
+        let attributes = Attributes.get(ent)
+        let handler = InputHandler.get(ent)
+
         queue.forEach(ev => {
             let mousePos = {
                 x: Math.floor(ev.localX),
@@ -251,16 +254,52 @@ let alotFactory = (scene) => {
             switch (ev.type) {
                 case 'click':
                     if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
-                        state.clicked = !state.clicked
-                        if (state.clicked) {
-                            scene.world.forEach(otherEnt => {
-                                if (otherEnt === ent) return
-                                let state = State.get(otherEnt)
-                                if (state) state.clicked = false
-                            });
+                        if (scene.menuState === 'default') {
+                            state.clicked = !state.clicked
+                            if (state.clicked) {
+                                scene.selectedAlots[0] = ent
+                                scene.world.forEach(otherEnt => {
+                                    if (otherEnt === ent) return
+                                    let state = State.get(otherEnt)
+                                    if (state) state.clicked = false
+                                });
+                            } else {
+                                scene.selectedAlots[0] = undefined
+                            }
+
+                        } else if (scene.menuState === 'mate') {
+                            if (state.clicked) {
+                                if (scene.selectedAlots[0] === ent) {
+                                    scene.selectedAlots[0] = scene.selectedAlots[1]
+                                    scene.selectedAlots[1] = undefined
+                                    state.clicked = false
+                                } else if (scene.selectedAlots[1] === ent) {
+                                    scene.selectedAlots[1] = undefined
+                                    state.clicked = false
+                                }
+                            } else if (!state.clicked) {
+                                if (scene.selectedAlots[0] === undefined) {
+                                    scene.selectedAlots[0] = ent
+                                } else if (scene.selectedAlots[1] === undefined) {
+                                    scene.selectedAlots[1] = ent
+                                } else {
+                                    break
+                                }
+                                state.clicked = true
+                            }
                         }
                     }
                     break
+                case 'mousemove':
+                    handler.mousePos = mousePos
+                    if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
+                        state.hovered = true
+                        scene.currentAlot = attributes
+                    } else {
+                        state.hovered = false
+                    }
+                    break
+
             }
         });
     }
@@ -473,24 +512,16 @@ let playerFactory = (scene) => {
                     handler.keydown.mouse1 = false
                     break
                 case 'mousemove':
-                    handler.mousePos = mousePos
-                    scene.currentAlot = undefined
-                    let topY = -1
+                    let clearAlot = true
                     scene.world.forEach(ent => {
-                        let position = Position.get(ent)
-                        let attributes = Attributes.get(ent)
-                        let state = State.get(ent)
-                        if (!position || !attributes || !state) return
-                        state.hovered = false
-                        if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
-                            if (position.y > topY) {
-                                state.hovered = true
-                                scene.currentAlot = attributes
-                                topY = position.y
-                            }
+                        let entPos = Position.get(ent)
+                        let entAttr = Attributes.get(ent)
+                        if (!entPos || !entAttr) return
+                        if (mousePos.x >= entPos.x && mousePos.x < entPos.x + 32 && mousePos.y >= entPos.y && mousePos.y < entPos.y + 32) {
+                            clearAlot = false
                         }
                     });
-                    break
+                    if (clearAlot) scene.currentAlot = undefined
             }
         });
     }
@@ -586,6 +617,7 @@ class RanchScene {
         this.x = 0
         this.y = 0
         this.currentAlot = undefined
+        this.selectedAlots = [undefined, undefined]
         this.menuState = 'default'
         this.canvas = document.createElement('canvas', { alpha: false })
         this.eventQueue = []
@@ -653,11 +685,9 @@ class RanchScene {
         this.context.fillStyle = 'black'
         this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
 
-        this.world.forEach(ent => {
-            let attributes = Attributes.get(ent)
-            let state = State.get(ent)
-            if (attributes && state && state.clicked) this.currentAlot = attributes
-        });
+        if (this.selectedAlots[0]) {
+            this.currentAlot = Attributes.get(this.selectedAlots[0])
+        }
         if (this.currentAlot) {
             drawWhiteText(this.context, this.currentAlot.name, WIDTH - 56, 4)
             this.context.fillStyle = 'green'
