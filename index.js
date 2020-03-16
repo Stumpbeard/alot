@@ -878,6 +878,7 @@ let RenderSystem = (scene) => {
 
     if (scene.menuState === 'title') {
         scene.context.drawImage(images['titleScreen'], 0, 0)
+        drawWhiteText(scene.context, 'CLICK TO START', 72, 16)
         return
     }
 
