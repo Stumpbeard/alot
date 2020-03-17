@@ -1,23 +1,9 @@
-// Constants
+// Globals
 const HEIGHT = 240
 const WIDTH = 256
 const SCALE = 4
+let eventQueue = []
 
-const ITEM_BOXES = []
-
-let itemBoxX = 208
-let itemBoxY = 144
-for (let i = 0; i < 10; ++i) {
-    ITEM_BOXES[i] = {
-        x: itemBoxX,
-        y: itemBoxY
-    }
-    itemBoxX += 16
-    if (itemBoxX >= 240) {
-        itemBoxX = 208
-        itemBoxY += 16
-    }
-}
 
 // Audio
 let ranchMusic = document.createElement('audio')
@@ -35,8 +21,6 @@ let main = (timestamp) => {
     activeScene[0].runSystems()
 }
 
-// Debug stuff
-let rectangles = []
 
 // ECS stuff
 let uid = 0;
@@ -68,8 +52,8 @@ let removeEntity = (ent) => {
     });
 }
 
-let position = (entity, x, y) => {
-    Position.set(entity, { x: x, y: y })
+let position = (entity, x, y, z) => {
+    Position.set(entity, { x: x, y: y, z: z })
 }
 
 let target = (entity, x, y, ent) => {
@@ -133,10 +117,10 @@ let timer = (entity, timer) => {
 }
 
 // Entity factories
-let bgRanchFacotry = (scene) => {
+let bgRanchFactory = (scene) => {
     let ent = Entity()
 
-    position(ent, 0, 0)
+    position(ent, 0, 0, 0)
     image(ent, 'bgRanch')
     scene.world.add(ent)
 
@@ -189,7 +173,7 @@ let fruitSpawnerFactory = (scene) => {
             if (existingItems < 10) {
                 let x = Math.floor(Math.random() * (scene.w - 64 - 8))
                 let y = Math.floor(Math.random() * (scene.h - 8))
-                eggplantFactory(scene, x, y)    
+                eggplantFactory(scene, x, y)
             }
             timer(ent, 15000)
         }
@@ -240,13 +224,13 @@ let geneticSimulator = (ent1, ent2) => {
 
     let geneRoll = Math.floor(Math.random() * 100)
     let rolledGene = 6
-    for(let i = 0; i < 7; ++i) {
+    for (let i = 0; i < 7; ++i) {
         if (geneRoll < geneArray[i]) {
             rolledGene = i
             break
         }
     }
-    switch(rolledGene) {
+    switch (rolledGene) {
         case 0:
             rolledColor = 'brown'
             break
@@ -394,7 +378,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             animation(ent, 'selected', 500)
             return
         }
-        
+
         let entTarget = Target.get(ent)
 
         if (entTarget) {
@@ -421,7 +405,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
             if (position.y < 0) position.y = 0
             if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
-    
+
             return
         }
 
@@ -802,9 +786,9 @@ let cursorFactory = (scene) => {
         });
     }
 
-    inputHandler(ent, handler)
+    // inputHandler(ent, handler)
     image(ent, 'cursor')
-    position(ent, 0, 0)
+    position(ent, 0, 0, 1)
     scene.world.add(ent)
 
     return ent
@@ -905,12 +889,6 @@ let RenderSystem = (scene) => {
         scene.canvas.style = `height: ${HEIGHT * SCALE}px; max-height: 100%;`
     }
 
-    if (scene.menuState === 'title') {
-        scene.context.drawImage(images['titleScreen'], 0, 0)
-        drawWhiteText(scene.context, 'CLICK TO START', 72, 16)
-        return
-    }
-
     let drawQueue = []
     scene.world.forEach(entity => {
         let position = Position.get(entity)
@@ -923,7 +901,11 @@ let RenderSystem = (scene) => {
         if (animation) drawable.animation = animation
         drawQueue.push(drawable)
     });
-    drawQueue.sort((a, b) => a.position.y - b.position.y)
+    drawQueue.sort(
+        (a, b) =>
+        (a.position.z < b.position.z) ? false :
+        ((a.position.z > b.position.z) ? true :
+            (a.position.y - b.position.y)))
     let offsetX = scene.x
     let offsetY = scene.y
     if (offsetX < 0) offsetX = 0
@@ -937,11 +919,6 @@ let RenderSystem = (scene) => {
         }
         scene.context.drawImage(imageToDraw, Math.floor(entity.position.x - offsetX), Math.floor(entity.position.y - offsetY))
     });
-    rectangles.forEach(rectangle => {
-        scene.context.strokeStyle = 'red'
-        scene.context.strokeRect(Math.floor(rectangle.x), Math.floor(rectangle.y), 32, 32)
-    });
-    rectangles = []
 }
 
 let AnimationSystem = (scene) => {
@@ -986,212 +963,70 @@ class RanchScene {
         this.world = new Registry();
         this.x = 0
         this.y = 0
-        this.currentAlot = undefined
-        this.selectedAlots = [undefined, undefined]
-        this.menuState = 'title'
+        this.w = WIDTH
+        this.h = HEIGHT
+
         this.canvas = document.createElement('canvas', { alpha: false })
-        this.eventQueue = []
         this.canvas.id = 'main-viewport'
         this.canvas.height = HEIGHT
         this.canvas.width = WIDTH
-        this.w = WIDTH
-        this.h = HEIGHT
+
+        let currentCanvas = document.getElementById('main-viewport')
+        if (currentCanvas) {
+            document.body.removeChild(currentCanvas)
+        }
         document.body.appendChild(this.canvas)
         document.body.appendChild(ranchMusic)
+
         this.context = this.canvas.getContext('2d')
         this.context.imageSmoothingEnabled = 'false'
-        this.buttons = {
-            mate: {
-                x: 196,
-                y: 120,
-                w: 56,
-                h: 8,
-                state: 'mate',
-                showItems: false
-            },
-            rest: {
-                x: 196,
-                y: 130,
-                w: 56,
-                h: 8,
-                state: 'rest',
-                showItems: false
-            },
-            x: {
-                x: 215,
-                y: 182,
-                w: 8,
-                h: 8,
-                state: 'default',
-                showItems: true
-            },
-            heart: {
-                x: 225,
-                y: 182,
-                w: 8,
-                h: 8,
-                state: 'default',
-                showItems: true
-            },
-        }
 
-        bgRanchFacotry(this)
-        cursorFactory(this)
-        for (let i = 0; i < 3; ++i) {
-            alotFactory(this)
-        }
-        // alotFactory(this, undefined, undefined, undefined, 'red')
-        // alotFactory(this, undefined, undefined, undefined, 'blue')
-        // alotFactory(this, undefined, undefined, undefined, 'green')
-        // alotFactory(this, undefined, undefined, undefined, 'yellow')
-        // alotFactory(this, undefined, undefined, undefined, 'purple')
-        // alotFactory(this, undefined, undefined, undefined, 'pink')
-
-        // babyAlotFactory(this, undefined, undefined, 'brown')
-        // babyAlotFactory(this, undefined, undefined, 'blue')
-        // babyAlotFactory(this, undefined, undefined, 'green')
-        // babyAlotFactory(this, undefined, undefined, 'yellow')
-        // babyAlotFactory(this, undefined, undefined, 'red')
-        // babyAlotFactory(this, undefined, undefined, 'purple')
-        // babyAlotFactory(this, undefined, undefined, 'pink')
-        // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
-        eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
-        // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
-        // pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
-        // pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
-        fruitSpawnerFactory(this)
-        playerFactory(this)
+        this.initializeEnts()
         this.setupControls()
     }
 
     runSystems() {
         InputHandlerSystem(this)
         AISystem(this)
-
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.context.fillStyle = 'black'
-        this.context.fillRect(WIDTH - 64, 0, 64, HEIGHT)
-
-        if (this.selectedAlots[0]) {
-            this.currentAlot = Attributes.get(this.selectedAlots[0])
-        }
-        if (this.currentAlot) {
-            drawWhiteText(this.context, this.currentAlot.name, WIDTH - 32 - (this.currentAlot.name.length / 2 * 8), 4)
-            // this.context.fillStyle = 'green'
-            // this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
-            // this.context.fillStyle = 'red'
-            // this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
-            // this.context.fillStyle = 'blue'
-            // this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
-            // this.context.fillStyle = 'pink'
-            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
-            // this.context.fillStyle = 'purple'
-            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
-
-            if (this.selectedAlots[0]) {
-                this.context.fillStyle = 'white'
-                this.context.fillRect(196, 120, 2, 8)
-                this.context.fillRect(250, 120, 2, 8)
-                this.context.fillStyle = 'black'
-                this.context.fillRect(197, 121, 54, 6)
-
-                drawWhiteText(this.context, 'MATE', 208, 120)
-            }
-        }
-
-        this.context.fillStyle = 'white'
-        this.context.fillRect(196, 112, 56, 2)
-
-        // this.context.fillRect(196, 120, 2, 8)
-        // this.context.fillRect(250, 120, 2, 8)
-        // this.context.fillRect(196, 130, 2, 8)
-        // this.context.fillRect(250, 130, 2, 8)
-        // if (this.menuState === 'default') {
-        // this.context.fillStyle = 'black'
-        // this.context.fillRect(197, 121, 54, 6)
-        //     this.context.fillRect(197, 131, 54, 6)
-        // } else if (this.menuState === 'mate') {
-        //     this.context.fillStyle = 'white'
-        //     this.context.fillRect(196, 120, 12, 8)
-        //     this.context.fillRect(240, 120, 12, 8)
-        //     this.context.fillStyle = 'black'
-        //     this.context.fillRect(197, 131, 54, 6)
-        //     this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
-        //     this.context.drawImage(images['buttonGo'], this.buttons.go.x, this.buttons.go.y)
-        // } else 
-        if (this.menuState === 'mate') {
-            this.context.fillStyle = 'white'
-            this.context.fillRect(196, 120, 12, 8)
-            this.context.fillRect(240, 120, 12, 8)
-            this.context.fillStyle = 'black'
-            this.context.fillRect(197, 131, 54, 6)
-            this.context.drawImage(images['buttonX'], this.buttons.x.x, this.buttons.x.y)
-
-            if (this.selectedAlots[1]) {
-                let otherAttr = Attributes.get(this.selectedAlots[1])
-                this.context.drawImage(images['buttonHeart'], this.buttons.heart.x, this.buttons.heart.y)
-                drawWhiteText(this.context, otherAttr.name, WIDTH - 32 - (otherAttr.name.length / 2 * 8), 168)
-            }
-        }
-        // drawWhiteText(this.context, 'MATE', 208, 120)
-        // drawWhiteText(this.context, 'REST', 208, 130)
-
-
-        let x = 208
-        let y = 144
-        let numBoxes = 10
-        if (this.menuState === 'default') {
-            for (let i = 0; i < numBoxes; ++i) {
-                this.context.fillStyle = 'white'
-                this.context.fillRect(x, y, 16, 16)
-                this.context.fillStyle = 'black'
-                this.context.fillRect(x + 1, y + 1, 14, 14)
-                x += 16
-                if (x >= 240) {
-                    x = 208
-                    y += 16
-                }
-            }
-        } else if (this.menuState === 'mate') {
-            // this.context.fillStyle = 'white'
-            // this.context.fillRect(216, 144, 16, 16)
-            // this.context.fillStyle = 'black'
-            // this.context.fillRect(216 + 1, 144 + 1, 14, 14)
-        }
         RenderSystem(this)
         AnimationSystem(this)
-            // drawWhiteText(this.context, 'STATUS', 200, 49)
+    }
+
+    initializeEnts() {
+        bgRanchFactory(this)
+        cursorFactory(this)
     }
 
     setupControls() {
-        let viewport = document.getElementById('main-viewport')
+        document.getElementById('main-viewport').addEventListener('mousedown',
+            (ev) => {
+                if (ev.which !== 1) return
+                ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
+                ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
+                eventQueue.push(ev)
+            })
 
-        document.getElementById('main-viewport').addEventListener('mousedown', (ev) => {
-            if (ev.which !== 1) return
-            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
-            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
-            this.eventQueue.push(ev)
-        })
-
-        document.getElementById('main-viewport').addEventListener('click', (ev) => {
-            if (ev.which !== 1) return
-            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
-            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
-            this.eventQueue.push(ev)
-        })
+        document.getElementById('main-viewport').addEventListener('click',
+            (ev) => {
+                if (ev.which !== 1) return
+                ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
+                ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
+                eventQueue.push(ev)
+            })
 
         document.addEventListener('mouseup', (ev) => {
             if (ev.which !== 1) return
-            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
-            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
-            this.eventQueue.push(ev)
+            ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
+            ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
+            eventQueue.push(ev)
         })
 
-        document.getElementById('main-viewport').addEventListener('mousemove', (ev) => {
-            ev.localX = ev.offsetX / (viewport.offsetWidth / WIDTH)
-            ev.localY = ev.offsetY / (viewport.offsetHeight / HEIGHT)
-            this.eventQueue.push(ev)
-        })
+        document.getElementById('main-viewport').addEventListener('mousemove',
+            (ev) => {
+                ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
+                ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
+                eventQueue.push(ev)
+            })
     }
 }
 
