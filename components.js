@@ -7,7 +7,6 @@ let Animation = new Component()
 let AI = new Component()
 let Attributes = new Component()
 let Status = new Component()
-let ParentScene = new Component()
 let InputHandler = new Component()
 let State = new Component()
 let Anchor = new Component()
@@ -15,7 +14,7 @@ let Bonus = new Component()
 let Timer = new Component()
 let Genetics = new Component()
 
-let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus, Timer, Genetics]
+let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, InputHandler, State, Anchor, Bonus, Timer, Genetics]
 let removeEntity = (ent) => {
     components.forEach(component => {
         component.delete(ent)
@@ -62,16 +61,12 @@ let status = (entity) => {
     Status.set(entity, { status: [] })
 }
 
-let parentScene = (entity, scene) => {
-    ParentScene.set(entity, { scene: scene })
-}
-
 let inputHandler = (entity, handler) => {
     InputHandler.set(entity, { handler: handler, keydown: { mouse1: false }, clickPos: { x: 0, y: 0 }, mousePos: { x: 0, y: 0 } })
 }
 
-let state = (entity) => {
-    State.set(entity, { hovered: false, clicked: false, hidden: false })
+let state = (entity, state) => {
+    State.set(entity, state)
 }
 
 let anchor = (entity, x, y) => {

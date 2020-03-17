@@ -1,23 +1,76 @@
 let CursorInputSystem = (scene) => {
     scene.world.forEach(ent => {
-        let entPosition = Position.get(ent)
         let entImage = Sprite.get(ent)
-        if (!entPosition || !entImage) return
+        if (!entImage || entImage.image !== 'cursor') return
 
-        if (entImage.image === 'cursor') {
-            eventQueue.forEach(ev => {
-                switch (ev.type) {
-                    case 'mousemove':
-                        entPosition.x = ev.localX
-                        entPosition.y = ev.localY
+        let entPosition = Position.get(ent)
+        eventQueue.forEach(ev => {
+            switch (ev.type) {
+                case 'mousemove':
+                    entPosition.x = ev.localX
+                    entPosition.y = ev.localY
+                    break
+                case 'mouseup':
+                    clickSound.play()
+                    break
+            }
+        })
+    })
+}
+
+let timerSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entTimer = Timer.get(ent)
+        if (!entTimer) return
+        timer.timer -= 1000 / 60
+    })
+}
+
+let alotAISystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entImage = Sprite.get(ent)
+        if (!entImage || !entImage.image.includes('Alot')) return
+
+        let entState = State.get(ent)
+
+        // Slightly move
+        if (entState.wandering) {
+            let entPosition = Position.get(ent)
+
+            // Decide whether to wiggle
+            let roll = Math.floor(Math.random() * 60) + 1
+            if (roll === 60) {
+                // Choose wander direction
+                roll = Math.floor(Math.random() * 4)
+                switch (roll) {
+                    case 0:
+                        entPosition.x += 1
                         break
-                    case 'mouseup':
-                        clickSound.play()
+                    case 1:
+                        entPosition.x -= 1
+                        break
+                    case 2:
+                        entPosition.y += 1
+                        break
+                    case 3:
+                        entPosition.y -= 1
                         break
                 }
-            });
+            }
         }
-    });
+
+        // Update decision
+        let entTimer = Timer.get(ent)
+        if (entTimer && entTimer.timer <= 0) {
+            timer(ent, 1000 * Math.floor(Math.random() * 5 + 1))
+        }
+
+        // Reenter the world bounds
+        if (position.x < 0) position.x = 0
+        if (position.x > scene.w - 32) position.x = scene.w - 32
+        if (position.y < 0) position.y = 0
+        if (position.y > scene.h - 32) position.y = scene.h - 32
+    })
 }
 
 let RenderSystem = (scene) => {
@@ -57,7 +110,7 @@ let RenderSystem = (scene) => {
             imageToDraw = sheets[entity.sprite.image].frames[sheets[entity.sprite.image].animations[entity.animation.animation][entity.animation.currentFrame]]
         }
         scene.context.drawImage(imageToDraw, Math.floor(entity.position.x - offsetX), Math.floor(entity.position.y - offsetY))
-    });
+    })
 }
 
 let AnimationSystem = (scene) => {
@@ -75,5 +128,5 @@ let AnimationSystem = (scene) => {
         if (animation.currentFrame >= sheets[sprite.image].animations[animation.animation].length) {
             animation.currentFrame = 0
         }
-    });
+    })
 }

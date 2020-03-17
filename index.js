@@ -163,6 +163,36 @@ let geneticSimulator = (ent1, ent2) => {
     return childGenes
 }
 
+let getTopGeneticColor = (geneticsProfile) => {
+    let color = 'brown'
+    let topColorValue = 0
+    for (const colorKey in geneticsProfile) {
+        if (geneticsProfile.hasOwnProperty(colorKey)) {
+            const colorValue = geneticsProfile[colorKey];
+            if (colorValue > topColorValue) {
+                color = colorKey
+                topColorValue = colorValue
+            }
+        }
+    }
+    return color
+}
+
+let randomXY = (scene) => [
+    Math.floor(Math.random() * scene.w),
+    Math.floor(Math.random() * scene.h)
+]
+
+let randomAtr = () => [
+    NAMES[Math.floor(Math.random() * NAMES.length)],
+    Math.floor(Math.random() * 6) + 1,
+    Math.floor(Math.random() * 6) + 1,
+    Math.floor(Math.random() * 6) + 1,
+    Math.floor(Math.random() * 6) + 1,
+    ((Math.floor(Math.random() * 2)) ? 'male' : 'female')
+]
+
+
 let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     let ent = Entity()
     if (!geneticsProfile) {
@@ -176,238 +206,217 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             pink: 70 / 6,
         }
     }
-    let color = 'brown'
-    let topColorValue = 0
-    for (const colorKey in geneticsProfile) {
-        if (geneticsProfile.hasOwnProperty(colorKey)) {
-            const colorValue = geneticsProfile[colorKey];
-            if (colorValue > topColorValue) {
-                color = colorKey
-                topColorValue = colorValue
-            }
-        }
-    }
+    let color = getTopGeneticColor(geneticsProfile)
 
-    let randomXY = () => [Math.floor(Math.random() * (scene.w - 96)), Math.floor(Math.random() * (scene.h - 32))]
-    let randomAtr = () => [
-        NAMES[Math.floor(Math.random() * NAMES.length)],
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-        ((Math.floor(Math.random() * 2)) ? 'male' : 'female')
-    ]
+    // let alotAI = () => {
+    //     let position = Position.get(ent)
+    //     let attributes = Attributes.get(ent)
+    //     let state = State.get(ent)
+    //     let status = Status.get(ent)
+    //     let entAnimation = Animation.get(ent)
+    //     let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
 
-    let alotAI = () => {
-        let position = Position.get(ent)
-        let attributes = Attributes.get(ent)
-        let state = State.get(ent)
-        let status = Status.get(ent)
-        let entAnimation = Animation.get(ent)
-        let velocity = (attributes.speed.natural + attributes.speed.bonus) * 0.1
+    //     if (state.mating) {
+    //         if (entAnimation.animation === 'found') {
+    //             let timer = Timer.get(ent)
+    //             let target = Target.get(ent)
+    //             timer.timer -= 1000 / 60
+    //             if (timer.timer <= 0) {
+    //                 state.mating = false
+    //                 Timer.delete(ent)
+    //                 if (status.status[0] === 'horny') {
+    //                     let babyX = (position.x + target.x) / 2 + Math.floor(Math.random() * 32) - 16
+    //                     let babyY = (position.y + target.y) / 2 + Math.floor(Math.random() * 32) - 16
+    //                     let babyGene = geneticSimulator(ent, target.ent)
+    //                     babyAlotFactory(scene, babyX, babyY, babyGene)
+    //                     status.status = []
+    //                     scene.world.forEach(otherEnt => {
+    //                         let entTarget = Target.get(otherEnt)
+    //                         let entAttr = Attributes.get(otherEnt)
+    //                         if (!entTarget) return
+    //                         if (entTarget.ent === ent && !entAttr) {
+    //                             removeEntity(otherEnt)
+    //                         }
+    //                     });
+    //                 }
+    //                 Target.delete(ent)
+    //             }
+    //             return
+    //         }
+    //         if (entAnimation.animation !== 'walk') {
+    //             animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+    //         }
+    //         let target = Target.get(ent)
+    //         let targetPos = Position.get(target.ent)
+    //         let averageX = Math.abs(position.x - targetPos.x) / 2
+    //         let averageY = Math.abs(position.y - targetPos.y) / 2
+    //         if (averageX >= averageY) {
+    //             if (position.x < targetPos.x) {
+    //                 position.x += velocity
+    //             } else {
+    //                 position.x -= velocity
+    //             }
+    //         } else if (averageX < averageY) {
+    //             if (position.y < targetPos.y) {
+    //                 position.y += velocity
+    //             } else {
+    //                 position.y -= velocity
+    //             }
+    //         }
+    //         target.x = targetPos.x
+    //         target.y = targetPos.y
 
-        if (state.mating) {
-            if (entAnimation.animation === 'found') {
-                let timer = Timer.get(ent)
-                let target = Target.get(ent)
-                timer.timer -= 1000 / 60
-                if (timer.timer <= 0) {
-                    state.mating = false
-                    Timer.delete(ent)
-                    if (status.status[0] === 'horny') {
-                        let babyX = (position.x + target.x) / 2 + Math.floor(Math.random() * 32) - 16
-                        let babyY = (position.y + target.y) / 2 + Math.floor(Math.random() * 32) - 16
-                        let babyGene = geneticSimulator(ent, target.ent)
-                        babyAlotFactory(scene, babyX, babyY, babyGene)
-                        status.status = []
-                        scene.world.forEach(otherEnt => {
-                            let entTarget = Target.get(otherEnt)
-                            let entAttr = Attributes.get(otherEnt)
-                            if (!entTarget) return
-                            if (entTarget.ent === ent && !entAttr) {
-                                removeEntity(otherEnt)
-                            }
-                        });
-                    }
-                    Target.delete(ent)
-                }
-                return
-            }
-            if (entAnimation.animation !== 'walk') {
-                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
-            }
-            let target = Target.get(ent)
-            let targetPos = Position.get(target.ent)
-            let averageX = Math.abs(position.x - targetPos.x) / 2
-            let averageY = Math.abs(position.y - targetPos.y) / 2
-            if (averageX >= averageY) {
-                if (position.x < targetPos.x) {
-                    position.x += velocity
-                } else {
-                    position.x -= velocity
-                }
-            } else if (averageX < averageY) {
-                if (position.y < targetPos.y) {
-                    position.y += velocity
-                } else {
-                    position.y -= velocity
-                }
-            }
-            target.x = targetPos.x
-            target.y = targetPos.y
+    //         if (position.x < targetPos.x + 16 &&
+    //             position.x + 16 > targetPos.x &&
+    //             position.y < targetPos.y + 16 &&
+    //             position.y + 16 > targetPos.y) {
+    //             animation(ent, 'found', 250)
+    //             timer(ent, 3000)
+    //         }
 
-            if (position.x < targetPos.x + 16 &&
-                position.x + 16 > targetPos.x &&
-                position.y < targetPos.y + 16 &&
-                position.y + 16 > targetPos.y) {
-                animation(ent, 'found', 250)
-                timer(ent, 3000)
-            }
+    //         return
+    //     }
 
-            return
-        }
+    //     let entTimer = Timer.get(ent)
 
-        let entTimer = Timer.get(ent)
+    //     if (entTimer) {
+    //         entTimer.timer -= 1000 / 60
+    //         if (entTimer.timer <= 0) {
+    //             Timer.delete(ent)
+    //             Target.delete(ent)
+    //         }
+    //     }
 
-        if (entTimer) {
-            entTimer.timer -= 1000 / 60
-            if (entTimer.timer <= 0) {
-                Timer.delete(ent)
-                Target.delete(ent)
-            }
-        }
+    //     if (state.clicked) {
+    //         animation(ent, 'selected', 500)
+    //         return
+    //     }
 
-        if (state.clicked) {
-            animation(ent, 'selected', 500)
-            return
-        }
+    //     let entTarget = Target.get(ent)
 
-        let entTarget = Target.get(ent)
+    //     if (entTarget) {
+    //         if (entAnimation.animation !== 'walk') {
+    //             animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+    //         }
+    //         let averageX = Math.abs(position.x - entTarget.x) / 2
+    //         let averageY = Math.abs(position.y - entTarget.y) / 2
+    //         if (averageX >= averageY) {
+    //             if (position.x < entTarget.x) {
+    //                 position.x += velocity
+    //             } else {
+    //                 position.x -= velocity
+    //             }
+    //         } else if (averageX < averageY) {
+    //             if (position.y < entTarget.y) {
+    //                 position.y += velocity
+    //             } else {
+    //                 position.y -= velocity
+    //             }
+    //         }
 
-        if (entTarget) {
-            if (entAnimation.animation !== 'walk') {
-                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
-            }
-            let averageX = Math.abs(position.x - entTarget.x) / 2
-            let averageY = Math.abs(position.y - entTarget.y) / 2
-            if (averageX >= averageY) {
-                if (position.x < entTarget.x) {
-                    position.x += velocity
-                } else {
-                    position.x -= velocity
-                }
-            } else if (averageX < averageY) {
-                if (position.y < entTarget.y) {
-                    position.y += velocity
-                } else {
-                    position.y -= velocity
-                }
-            }
+    //         if (position.x < 0) position.x = 0
+    //         if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
+    //         if (position.y < 0) position.y = 0
+    //         if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
 
-            if (position.x < 0) position.x = 0
-            if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
-            if (position.y < 0) position.y = 0
-            if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
+    //         return
+    //     }
 
-            return
-        }
+    //     if (entAnimation.animation !== 'idle') animation(ent, 'idle', 500)
+    //     if (state.hovered || state.clicked) return
+    //     let decision = Math.floor(Math.random() * 20)
+    //     if (decision < 19) return
+    //     let dir = Math.floor(Math.random() * 5)
+    //     switch (dir) {
+    //         case 0:
+    //             position.x -= velocity
+    //             break
+    //         case 1:
+    //             position.x += velocity
+    //             break
+    //         case 2:
+    //             position.y -= velocity
+    //             break
+    //         case 3:
+    //             position.y += velocity
+    //             break
+    //         case 4:
+    //             timer(ent, (Math.floor(Math.random() * 3) + 1) * 1000)
+    //             target(ent, Math.floor(Math.random() * (WIDTH - 96)), Math.floor(Math.random() * (HEIGHT - 32)))
+    //             animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
+    //             break
+    //     }
+    // }
 
-        if (entAnimation.animation !== 'idle') animation(ent, 'idle', 500)
-        if (state.hovered || state.clicked) return
-        let decision = Math.floor(Math.random() * 20)
-        if (decision < 19) return
-        let dir = Math.floor(Math.random() * 5)
-        switch (dir) {
-            case 0:
-                position.x -= velocity
-                break
-            case 1:
-                position.x += velocity
-                break
-            case 2:
-                position.y -= velocity
-                break
-            case 3:
-                position.y += velocity
-                break
-            case 4:
-                timer(ent, (Math.floor(Math.random() * 3) + 1) * 1000)
-                target(ent, Math.floor(Math.random() * (WIDTH - 96)), Math.floor(Math.random() * (HEIGHT - 32)))
-                animation(ent, 'walk', 500 - 50 * (attributes.speed.natural + attributes.speed.bonus))
-                break
-        }
-    }
+    // let handler = (queue) => {
+    //     let position = Position.get(ent)
+    //     let state = State.get(ent)
+    //     let attributes = Attributes.get(ent)
+    //     let handler = InputHandler.get(ent)
 
-    let handler = (queue) => {
-        let position = Position.get(ent)
-        let state = State.get(ent)
-        let attributes = Attributes.get(ent)
-        let handler = InputHandler.get(ent)
+    //     queue.forEach(ev => {
+    //         let mousePos = {
+    //             x: Math.floor(ev.localX),
+    //             y: Math.floor(ev.localY)
+    //         }
+    //         switch (ev.type) {
+    //             case 'click':
+    //                 if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
+    //                     if (scene.menuState === 'default') {
+    //                         state.clicked = !state.clicked
+    //                         if (state.clicked) {
+    //                             scene.selectedAlots[0] = ent
+    //                             scene.world.forEach(otherEnt => {
+    //                                 if (otherEnt === ent) return
+    //                                 let state = State.get(otherEnt)
+    //                                 if (state) state.clicked = false
+    //                             });
+    //                         } else {
+    //                             scene.selectedAlots[0] = undefined
+    //                         }
 
-        queue.forEach(ev => {
-            let mousePos = {
-                x: Math.floor(ev.localX),
-                y: Math.floor(ev.localY)
-            }
-            switch (ev.type) {
-                case 'click':
-                    if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
-                        if (scene.menuState === 'default') {
-                            state.clicked = !state.clicked
-                            if (state.clicked) {
-                                scene.selectedAlots[0] = ent
-                                scene.world.forEach(otherEnt => {
-                                    if (otherEnt === ent) return
-                                    let state = State.get(otherEnt)
-                                    if (state) state.clicked = false
-                                });
-                            } else {
-                                scene.selectedAlots[0] = undefined
-                            }
+    //                     } else if (scene.menuState === 'mate') {
+    //                         if (state.clicked) {
+    //                             if (scene.selectedAlots[0] === ent) {
+    //                                 scene.selectedAlots[0] = scene.selectedAlots[1]
+    //                                 scene.selectedAlots[1] = undefined
+    //                                 state.clicked = false
+    //                             } else if (scene.selectedAlots[1] === ent) {
+    //                                 scene.selectedAlots[1] = undefined
+    //                                 state.clicked = false
+    //                             }
+    //                         } else if (!state.clicked) {
+    //                             if (scene.selectedAlots[0] === undefined) {
+    //                                 scene.selectedAlots[0] = ent
+    //                             } else if (scene.selectedAlots[1] === undefined) {
+    //                                 scene.selectedAlots[1] = ent
+    //                             } else {
+    //                                 break
+    //                             }
+    //                             state.clicked = true
+    //                         }
+    //                     }
+    //                 }
+    //                 break
+    //             case 'mousemove':
+    //                 handler.mousePos = mousePos
+    //                 if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
+    //                     state.hovered = true
+    //                     scene.currentAlot = attributes
+    //                 } else {
+    //                     state.hovered = false
+    //                 }
+    //                 break
 
-                        } else if (scene.menuState === 'mate') {
-                            if (state.clicked) {
-                                if (scene.selectedAlots[0] === ent) {
-                                    scene.selectedAlots[0] = scene.selectedAlots[1]
-                                    scene.selectedAlots[1] = undefined
-                                    state.clicked = false
-                                } else if (scene.selectedAlots[1] === ent) {
-                                    scene.selectedAlots[1] = undefined
-                                    state.clicked = false
-                                }
-                            } else if (!state.clicked) {
-                                if (scene.selectedAlots[0] === undefined) {
-                                    scene.selectedAlots[0] = ent
-                                } else if (scene.selectedAlots[1] === undefined) {
-                                    scene.selectedAlots[1] = ent
-                                } else {
-                                    break
-                                }
-                                state.clicked = true
-                            }
-                        }
-                    }
-                    break
-                case 'mousemove':
-                    handler.mousePos = mousePos
-                    if (mousePos.x >= position.x && mousePos.x < position.x + 32 && mousePos.y >= position.y && mousePos.y < position.y + 32) {
-                        state.hovered = true
-                        scene.currentAlot = attributes
-                    } else {
-                        state.hovered = false
-                    }
-                    break
+    //         }
+    //     });
+    // }
 
-            }
-        });
-    }
     if (!x || !y) {
-        position(ent, ...randomXY())
+        position(ent, ...randomXY(scene), 1)
     } else {
-        position(ent, x, y)
+        position(ent, x, y, 1)
     }
-    ai(ent, alotAI)
-    inputHandler(ent, handler)
     if (!attr) {
         attributes(ent, ...randomAtr())
     } else {
@@ -416,8 +425,8 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     status(ent)
     image(ent, color + 'Alot')
     animation(ent, 'idle', 500)
-    parentScene(ent, scene)
-    state(ent)
+    state(ent, { wandering: true })
+    timer(ent, 1000 * Math.floor(Math.random() * 5 + 1))
     genetics(ent, geneticsProfile)
     scene.world.add(ent)
 
@@ -809,6 +818,7 @@ class RanchScene {
 
     runSystems() {
         CursorInputSystem(this)
+        alotAISystem(this)
         RenderSystem(this)
         AnimationSystem(this)
         eventQueue = []
@@ -817,6 +827,7 @@ class RanchScene {
     initializeEnts() {
         bgRanchFactory(this)
         cursorFactory(this)
+        alotFactory(this)
     }
 
     setupControls() {
