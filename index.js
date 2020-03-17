@@ -26,107 +26,10 @@ let main = (timestamp) => {
 let uid = 0;
 
 let Entity = () => uid++;
-let Component = Map;
 let Registry = Set;
 
-// Components
-let Position = new Component()
-let Target = new Component()
-let Sprite = new Component()
-let Animation = new Component()
-let AI = new Component()
-let Attributes = new Component()
-let Status = new Component()
-let ParentScene = new Component()
-let InputHandler = new Component()
-let State = new Component()
-let Anchor = new Component()
-let Bonus = new Component()
-let Timer = new Component()
-let Genetics = new Component()
-
-let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, ParentScene, InputHandler, State, Anchor, Bonus, Timer, Genetics]
-let removeEntity = (ent) => {
-    components.forEach(component => {
-        component.delete(ent)
-    });
-}
-
-let position = (entity, x, y, z) => {
-    Position.set(entity, { x: x, y: y, z: z })
-}
-
-let target = (entity, x, y, ent) => {
-    Target.set(entity, { x: x, y: y, ent: ent })
-}
-
-let image = (entity, image) => {
-    Sprite.set(entity, { image: image })
-}
-
-let animation = (entity, animation, rate) => {
-    let randomTimerStart = Math.floor(Math.random() * rate / 2)
-    Animation.set(entity, { animation: animation, rate: rate, timer: randomTimerStart, currentFrame: 0 })
-}
-
-let ai = (entity, ai) => {
-    AI.set(entity, { ai: ai })
-}
-
-let attributes = (entity, name, spd, end, fcs, spk, sex) => {
-    Attributes.set(entity, {
-        name: name,
-        speed: { natural: spd, bonus: 0 },
-        endurance: { natural: end, bonus: 0 },
-        focus: { natural: fcs, bonus: 0 },
-        spunk: { natural: spk, bonus: 0 },
-        sex: sex
-    })
-}
-
-let genetics = (entity, genetics) => {
-    Genetics.set(entity, genetics)
-}
-
-let status = (entity) => {
-    Status.set(entity, { status: [] })
-}
-
-let parentScene = (entity, scene) => {
-    ParentScene.set(entity, { scene: scene })
-}
-
-let inputHandler = (entity, handler) => {
-    InputHandler.set(entity, { handler: handler, keydown: { mouse1: false }, clickPos: { x: 0, y: 0 }, mousePos: { x: 0, y: 0 } })
-}
-
-let state = (entity) => {
-    State.set(entity, { hovered: false, clicked: false, hidden: false })
-}
-
-let anchor = (entity, x, y) => {
-    Anchor.set(entity, { x: x, y: y })
-}
-
-let bonus = (entity, status, attributes) => {
-    Bonus.set(entity, { status: status, attributes: attributes })
-}
-
-let timer = (entity, timer) => {
-    Timer.set(entity, { timer: timer })
-}
 
 // Entity factories
-let bgRanchFactory = (scene) => {
-    let ent = Entity()
-
-    position(ent, 0, 0, 0)
-    image(ent, 'bgRanch')
-    scene.world.add(ent)
-
-    return ent
-}
-
 let bgDigFactory = (scene) => {
     let ent = Entity()
 
@@ -769,31 +672,6 @@ let eggplantFactory = (scene, x, y) => {
     return itemFactory(scene, 'foodEggplant', x, y, bonus)
 }
 
-let cursorFactory = (scene) => {
-    let ent = Entity()
-
-    let handler = (queue) => {
-        let pos = Position.get(ent)
-        queue.forEach(ev => {
-            if (ev.type === 'mousemove') {
-                pos.x = ev.localX
-                pos.y = ev.localY
-            }
-
-            if (ev.type === 'click') {
-                clickSound.play()
-            }
-        });
-    }
-
-    // inputHandler(ent, handler)
-    image(ent, 'cursor')
-    position(ent, 0, 0, 1)
-    scene.world.add(ent)
-
-    return ent
-}
-
 let playerFactory = (scene) => {
     let ent = Entity()
 
@@ -882,63 +760,6 @@ let playerFactory = (scene) => {
 }
 
 // Systems
-let RenderSystem = (scene) => {
-    if (document.body.clientHeight >= document.body.clientWidth) {
-        scene.canvas.style = `width: ${WIDTH * SCALE}px; max-width: 100%;`
-    } else {
-        scene.canvas.style = `height: ${HEIGHT * SCALE}px; max-height: 100%;`
-    }
-
-    let drawQueue = []
-    scene.world.forEach(entity => {
-        let position = Position.get(entity)
-        let animation = Animation.get(entity)
-        let sprite = Sprite.get(entity)
-        if (!position || !sprite) return
-        let state = State.get(entity)
-        if (state && state.hidden) return
-        let drawable = { sprite: sprite, position: position }
-        if (animation) drawable.animation = animation
-        drawQueue.push(drawable)
-    });
-    drawQueue.sort(
-        (a, b) =>
-        (a.position.z < b.position.z) ? false :
-        ((a.position.z > b.position.z) ? true :
-            (a.position.y - b.position.y)))
-    let offsetX = scene.x
-    let offsetY = scene.y
-    if (offsetX < 0) offsetX = 0
-    if (offsetX >= scene.w - scene.canvas.width) offsetX = scene.w - scene.canvas.width
-    if (offsetY < 0) offsetY = 0
-    if (offsetY >= scene.h - scene.canvas.height) offsetY = scene.h - scene.canvas.height
-    drawQueue.forEach(entity => {
-        let imageToDraw = images[entity.sprite.image]
-        if (entity.animation) {
-            imageToDraw = sheets[entity.sprite.image].frames[sheets[entity.sprite.image].animations[entity.animation.animation][entity.animation.currentFrame]]
-        }
-        scene.context.drawImage(imageToDraw, Math.floor(entity.position.x - offsetX), Math.floor(entity.position.y - offsetY))
-    });
-}
-
-let AnimationSystem = (scene) => {
-    scene.world.forEach(ent => {
-        let sprite = Sprite.get(ent)
-        let animation = Animation.get(ent)
-        if (!sprite || !animation) return
-
-        animation.timer += 1000 / 60
-        if (animation.timer >= animation.rate) {
-            animation.currentFrame += 1
-            animation.timer = 0
-        }
-
-        if (animation.currentFrame >= sheets[sprite.image].animations[animation.animation].length) {
-            animation.currentFrame = 0
-        }
-    });
-}
-
 let AISystem = (scene) => {
     scene.world.forEach(entity => {
         let ai = AI.get(entity)
@@ -956,6 +777,7 @@ let InputHandlerSystem = (scene) => {
     });
     scene.eventQueue = []
 }
+
 
 // Scenes
 class RanchScene {
@@ -986,10 +808,10 @@ class RanchScene {
     }
 
     runSystems() {
-        InputHandlerSystem(this)
-        AISystem(this)
+        CursorInputSystem(this)
         RenderSystem(this)
         AnimationSystem(this)
+        eventQueue = []
     }
 
     initializeEnts() {

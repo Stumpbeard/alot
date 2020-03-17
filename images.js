@@ -66,7 +66,7 @@ foodPineappleImage.src = 'images/food-pineapple.png'
 images['foodPineapple'] = foodPineappleImage
 
 let bgRanchImage = new Image()
-bgRanchImage.src = 'images/ranch-bg-cropped.png'
+bgRanchImage.src = 'images/ranch-bg.png'
 images['bgRanch'] = bgRanchImage
 
 let bgDigImage = new Image()
