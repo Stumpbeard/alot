@@ -425,7 +425,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     status(ent)
     image(ent, color + 'Alot')
     animation(ent, 'idle', 500)
-    state(ent, { wandering: true })
+        // state(ent, { wandering: true })
     timer(ent, 1000 * Math.floor(Math.random() * 5 + 1))
     genetics(ent, geneticsProfile)
     scene.world.add(ent)
@@ -817,8 +817,9 @@ class RanchScene {
     }
 
     runSystems() {
+        TimerSystem(this)
         CursorInputSystem(this)
-        alotAISystem(this)
+        AlotAISystem(this)
         RenderSystem(this)
         AnimationSystem(this)
         eventQueue = []
