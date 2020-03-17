@@ -78,7 +78,6 @@ let AlotAISystem = (scene) => {
                 Math.abs(entPosition.y - entTarget.y) < 5) {
                 Target.delete(ent)
             }
-            return
         }
 
         // Slightly move
