@@ -141,46 +141,39 @@ let AlotAISystem = (scene) => {
     })
 }
 
-let ClickInputSystem = (scene) => {
-    EVENT_QUEUE.forEach(ev => {
-        let mousePos = { x: ev.localX, y: ev.localY }
+let AlotInputSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entImage = Sprite.get(ent)
+        if (!entImage || !entImage.image.includes('Alot')) return
 
-        switch (ev.type) {
-            case 'mouseup':
-                // Find clickable ents and order them to find top
-                let clickableEnts = []
-                scene.world.forEach(ent => {
-                    let entPosition = Position.get(ent)
-                    let entImage = Sprite.get(ent)
-                    if (!entPosition ||
-                        !entImage ||
-                        entImage.image === 'cursor') return
-
-                    let y = images[entImage.image].height
-                    if (isInsideBox(mousePos, entPosition, y)) {
-                        clickableEnts.push({ position: entPosition })
-                    }
-                })
-                clickableEnts.sort(findOnTop).reverse()
-
-                // If we have stuff to click, reset click one everything else,
-                // and click the top boy
-                if (clickableEnts.length > 0) {
-                    scene.world.forEach(ent => {
-                        let entPosition = Position.get(ent)
+        let entPosition = Position.get(ent)
+        EVENT_QUEUE.forEach(ev => {
+            let mousePos = { x: ev.localX, y: ev.localY }
+            switch (ev.type) {
+                case 'mousedown':
+                    if (isInsideBox(mousePos, entPosition, 32)) {
                         let entState = State.get(ent)
-                        if (!entPosition || !entState) return
-
-                        if (clickableEnts[0].position === entPosition) {
-                            entState.selected = !entState.selected
-                        } else {
-                            entState.selected = false
-                        }
-                    })
-                }
-                break
-        }
+                        entState.selected = !entState.selected
+                    }
+                    break
+            }
+        })
     })
+}
+
+let StateSystem = (scene) => {
+    // Only one selected
+    let selecteds = []
+    scene.world.forEach(ent => {
+        let entPosition = Position.get(ent)
+        let entState = State.get(ent)
+        if (!entPosition || !entState || !entState.selected) return
+
+        selecteds.push({ position: entPosition, state: entState })
+        entState.selected = false
+    })
+    selecteds.sort(findOnTop).reverse()
+    if (selecteds.length > 0) selecteds[0].state.selected = true
 }
 
 let RenderSystem = (scene) => {

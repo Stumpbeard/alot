@@ -819,7 +819,8 @@ class RanchScene {
     runSystems() {
         TimerSystem(this)
         CursorInputSystem(this)
-        ClickInputSystem(this)
+        AlotInputSystem(this)
+        StateSystem(this)
         AlotAISystem(this)
         RenderSystem(this)
         AnimationSystem(this)
