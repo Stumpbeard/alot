@@ -2,7 +2,7 @@
 const HEIGHT = 240
 const WIDTH = 256
 const SCALE = 4
-let eventQueue = []
+let EVENT_QUEUE = []
 
 
 // Audio
@@ -425,7 +425,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     status(ent)
     image(ent, color + 'Alot')
     animation(ent, 'idle', 500)
-        // state(ent, { wandering: true })
+    state(ent, {})
     timer(ent, 1000 * Math.floor(Math.random() * 5 + 1))
     genetics(ent, geneticsProfile)
     scene.world.add(ent)
@@ -819,15 +819,17 @@ class RanchScene {
     runSystems() {
         TimerSystem(this)
         CursorInputSystem(this)
+        ClickInputSystem(this)
         AlotAISystem(this)
         RenderSystem(this)
         AnimationSystem(this)
-        eventQueue = []
+        EVENT_QUEUE = []
     }
 
     initializeEnts() {
         bgRanchFactory(this)
         cursorFactory(this)
+        alotFactory(this)
         alotFactory(this)
     }
 
@@ -837,7 +839,7 @@ class RanchScene {
                 if (ev.which !== 1) return
                 ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
                 ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
-                eventQueue.push(ev)
+                EVENT_QUEUE.push(ev)
             })
 
         document.getElementById('main-viewport').addEventListener('click',
@@ -845,21 +847,21 @@ class RanchScene {
                 if (ev.which !== 1) return
                 ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
                 ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
-                eventQueue.push(ev)
+                EVENT_QUEUE.push(ev)
             })
 
         document.addEventListener('mouseup', (ev) => {
             if (ev.which !== 1) return
             ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
             ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
-            eventQueue.push(ev)
+            EVENT_QUEUE.push(ev)
         })
 
         document.getElementById('main-viewport').addEventListener('mousemove',
             (ev) => {
                 ev.localX = ev.offsetX / (this.canvas.offsetWidth / WIDTH)
                 ev.localY = ev.offsetY / (this.canvas.offsetHeight / HEIGHT)
-                eventQueue.push(ev)
+                EVENT_QUEUE.push(ev)
             })
     }
 }

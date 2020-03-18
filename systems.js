@@ -1,10 +1,29 @@
+// HELPERS
+
+let isInsideBox = (coords, box, dims) => {
+    if (coords.x >= box.x &&
+        coords.x < box.x + dims &&
+        coords.y >= box.y &&
+        coords.y < box.y + dims) {
+        return true
+    }
+    return false
+}
+
+let findOnTop = (a, b) =>
+    (a.position.z < b.position.z) ? false :
+    ((a.position.z > b.position.z) ? true :
+        (a.position.y - b.position.y))
+
+// SYSTEMS
+
 let CursorInputSystem = (scene) => {
     scene.world.forEach(ent => {
         let entImage = Sprite.get(ent)
         if (!entImage || entImage.image !== 'cursor') return
 
         let entPosition = Position.get(ent)
-        eventQueue.forEach(ev => {
+        EVENT_QUEUE.forEach(ev => {
             switch (ev.type) {
                 case 'mousemove':
                     entPosition.x = ev.localX
@@ -46,73 +65,122 @@ let AlotAISystem = (scene) => {
         }
 
         let entAnimation = Animation.get(ent)
+        let entState = State.get(ent)
         let entPosition = Position.get(ent)
         let entTarget = Target.get(ent)
 
-        // Walk towards target
-        if (entTarget) {
-            let entAttributes = Attributes.get(ent)
-            let entTarget = Target.get(ent)
+        // Pause if selected
+        if (entState.selected) {
+            animation(ent, 'selected', 500)
+        } else {
+            // Walk towards target
+            if (entTarget) {
+                let entAttributes = Attributes.get(ent)
+                let entTarget = Target.get(ent)
 
-            if (entAnimation.animation !== 'walk') {
-                animation(ent, 'walk', 500 - 50 * (entAttributes.speed.natural + entAttributes.speed.bonus))
-            }
-
-            let velocity = (entAttributes.speed.natural + entAttributes.speed.bonus) * 0.1
-            let averageX = Math.abs(entPosition.x - entTarget.x) / 2
-            let averageY = Math.abs(entPosition.y - entTarget.y) / 2
-            if (averageX >= averageY) {
-                if (entPosition.x < entTarget.x) {
-                    entPosition.x += velocity
-                } else {
-                    entPosition.x -= velocity
+                if (entAnimation.animation !== 'walk') {
+                    animation(ent, 'walk', 500 - 50 * (entAttributes.speed.natural + entAttributes.speed.bonus))
                 }
-            } else if (averageX < averageY) {
-                if (entPosition.y < entTarget.y) {
-                    entPosition.y += velocity
-                } else {
-                    entPosition.y -= velocity
+
+                let velocity = (entAttributes.speed.natural + entAttributes.speed.bonus) * 0.1
+                let averageX = Math.abs(entPosition.x - entTarget.x) / 2
+                let averageY = Math.abs(entPosition.y - entTarget.y) / 2
+                if (averageX >= averageY) {
+                    if (entPosition.x < entTarget.x) {
+                        entPosition.x += velocity
+                    } else {
+                        entPosition.x -= velocity
+                    }
+                } else if (averageX < averageY) {
+                    if (entPosition.y < entTarget.y) {
+                        entPosition.y += velocity
+                    } else {
+                        entPosition.y -= velocity
+                    }
+                }
+                if (Math.abs(entPosition.x - entTarget.x) < 5 &&
+                    Math.abs(entPosition.y - entTarget.y) < 5) {
+                    Target.delete(ent)
                 }
             }
-            if (Math.abs(entPosition.x - entTarget.x) < 5 &&
-                Math.abs(entPosition.y - entTarget.y) < 5) {
-                Target.delete(ent)
-            }
-        }
 
-        // Slightly move
-        else {
-            if (entAnimation.animation !== 'idle') {
-                animation(ent, 'idle', 500)
-            }
+            // Slightly move
+            else {
+                if (entAnimation.animation !== 'idle') {
+                    animation(ent, 'idle', 500)
+                }
 
-            // Decide whether to wiggle
-            let roll = Math.floor(Math.random() * 60) + 1
-            if (roll === 60) {
-                // Choose wander direction
-                roll = Math.floor(Math.random() * 4)
-                switch (roll) {
-                    case 0:
-                        entPosition.x += 1
-                        break
-                    case 1:
-                        entPosition.x -= 1
-                        break
-                    case 2:
-                        entPosition.y += 1
-                        break
-                    case 3:
-                        entPosition.y -= 1
-                        break
+                // Decide whether to wiggle
+                let roll = Math.floor(Math.random() * 60) + 1
+                if (roll === 60) {
+                    // Choose wander direction
+                    roll = Math.floor(Math.random() * 4)
+                    switch (roll) {
+                        case 0:
+                            entPosition.x += 1
+                            break
+                        case 1:
+                            entPosition.x -= 1
+                            break
+                        case 2:
+                            entPosition.y += 1
+                            break
+                        case 3:
+                            entPosition.y -= 1
+                            break
+                    }
                 }
             }
         }
 
         // Reenter the world bounds
-        if (position.x < 0) position.x = 0
-        if (position.x > scene.w - 32) position.x = scene.w - 32
-        if (position.y < 0) position.y = 0
-        if (position.y > scene.h - 32) position.y = scene.h - 32
+        if (entPosition.x < 0) entPosition.x = 0
+        if (entPosition.x > scene.w - 32) entPosition.x = scene.w - 32
+        if (entPosition.y < 0) entPosition.y = 0
+        if (entPosition.y > scene.h - 32) entPosition.y = scene.h - 32
+    })
+}
+
+let ClickInputSystem = (scene) => {
+    EVENT_QUEUE.forEach(ev => {
+        let mousePos = { x: ev.localX, y: ev.localY }
+
+        switch (ev.type) {
+            case 'mouseup':
+                // Find clickable ents and order them to find top
+                let clickableEnts = []
+                scene.world.forEach(ent => {
+                    let entPosition = Position.get(ent)
+                    let entImage = Sprite.get(ent)
+                    if (!entPosition ||
+                        !entImage ||
+                        entImage.image === 'cursor') return
+
+                    let y = images[entImage.image].height
+                    if (isInsideBox(mousePos, entPosition, y)) {
+                        clickableEnts.push({ position: entPosition })
+                    }
+                })
+                clickableEnts.sort(findOnTop).reverse()
+                console.log(clickableEnts)
+
+                // If we have stuff to click, reset click one everything else,
+                // and click the top boy
+                if (clickableEnts.length > 0) {
+                    scene.world.forEach(ent => {
+                        let entPosition = Position.get(ent)
+                        let entState = State.get(ent)
+                        if (!entPosition || !entState) return
+
+                        if (clickableEnts[0].position === entPosition) {
+                            entState.selected = !entState.selected
+                        } else {
+                            entState.selected = false
+                        }
+                    })
+                }
+                break
+        }
     })
 }
 
@@ -136,11 +204,7 @@ let RenderSystem = (scene) => {
         if (animation) drawable.animation = animation
         drawQueue.push(drawable)
     });
-    drawQueue.sort(
-        (a, b) =>
-        (a.position.z < b.position.z) ? false :
-        ((a.position.z > b.position.z) ? true :
-            (a.position.y - b.position.y)))
+    drawQueue.sort(findOnTop)
     let offsetX = scene.x
     let offsetY = scene.y
     if (offsetX < 0) offsetX = 0
