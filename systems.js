@@ -162,7 +162,6 @@ let ClickInputSystem = (scene) => {
                     }
                 })
                 clickableEnts.sort(findOnTop).reverse()
-                console.log(clickableEnts)
 
                 // If we have stuff to click, reset click one everything else,
                 // and click the top boy
