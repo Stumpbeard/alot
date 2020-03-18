@@ -123,3 +123,10 @@ Notes on Animations:
     - idle: frames 1, 2; 500ms
     - selected: frame 3; ms N/A
     - walk: frames 4, 5, 6, 7; 250ms
+
+
+Game description:
+Help alots make a lot of alots. Collect eggplants and feed them to alots to encourage romance. Use your matchmaking skills to pair up the alots until you have a lot of every color!
+
+CONTROLS:
+Click an alot to select it. Drag an eggplant to a selected alot to feed. Click "mate" in the sidebar of a selected alot, then click another alot. Click the heart to proceed with the match.
