@@ -189,7 +189,7 @@ let fruitSpawnerFactory = (scene) => {
             if (existingItems < 10) {
                 let x = Math.floor(Math.random() * (scene.w - 64 - 8))
                 let y = Math.floor(Math.random() * (scene.h - 8))
-                eggplantFactory(scene, x, y)    
+                eggplantFactory(scene, x, y)
             }
             timer(ent, 15000)
         }
@@ -240,13 +240,13 @@ let geneticSimulator = (ent1, ent2) => {
 
     let geneRoll = Math.floor(Math.random() * 100)
     let rolledGene = 6
-    for(let i = 0; i < 7; ++i) {
+    for (let i = 0; i < 7; ++i) {
         if (geneRoll < geneArray[i]) {
             rolledGene = i
             break
         }
     }
-    switch(rolledGene) {
+    switch (rolledGene) {
         case 0:
             rolledColor = 'brown'
             break
@@ -386,7 +386,6 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             entTimer.timer -= 1000 / 60
             if (entTimer.timer <= 0) {
                 Timer.delete(ent)
-                Target.delete(ent)
             }
         }
 
@@ -394,7 +393,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             animation(ent, 'selected', 500)
             return
         }
-        
+
         let entTarget = Target.get(ent)
 
         if (entTarget) {
@@ -421,7 +420,11 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
             if (position.x > WIDTH - 64 - 32) position.x = WIDTH - 64 - 32
             if (position.y < 0) position.y = 0
             if (position.y > HEIGHT - 32) position.y = HEIGHT - 32
-    
+
+            if ((position.x >= entTarget.x - 5 && position.x <= entTarget.x + 5) && (position.y >= entTarget.y - 5 && position.y <= entTarget.y + 5)) {
+                Target.delete(ent)
+            }
+
             return
         }
 
@@ -472,7 +475,8 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
                                 scene.world.forEach(otherEnt => {
                                     if (otherEnt === ent) return
                                     let state = State.get(otherEnt)
-                                    if (state) state.clicked = false
+                                    let image = Sprite.get(otherEnt)
+                                    if (state && image && image.image.includes('Alot')) state.clicked = false
                                 });
                             } else {
                                 scene.selectedAlots[0] = undefined
@@ -698,12 +702,15 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
             switch (ev.type) {
                 case 'mousedown':
                     if (mousePos.x >= position.x && mousePos.x < position.x + 8 && mousePos.y >= position.y && mousePos.y < position.y + 8) {
+                        console.log('clicked the plant')
+
                         state.clicked = true
                         handler.mousePos = mousePos
                     }
                     break
                 case 'mouseup':
                     if (state.clicked) {
+                        console.log('mouseup when clicked')
                         targetToBonus = undefined
                         targetY = -1
                         scene.world.forEach(targetEnt => {
@@ -719,6 +726,7 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
                             }
                         });
                         if (targetToBonus) {
+                            console.log('ent= ', targetToBonus.ent)
                             if (bonus.attributes) {
                                 for (const key in bonus.attributes) {
                                     if (bonus.attributes.hasOwnProperty(key)) {
@@ -1056,9 +1064,9 @@ class RanchScene {
         // babyAlotFactory(this, undefined, undefined, 'pink')
         // eggplantFactory(this, ITEM_BOXES[0].x, ITEM_BOXES[0].y)
         eggplantFactory(this, ITEM_BOXES[2].x, ITEM_BOXES[2].y)
-        // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
-        // pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
-        // pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
+            // pineappleFactory(this, ITEM_BOXES[1].x, ITEM_BOXES[1].y)
+            // pineappleFactory(this, ITEM_BOXES[3].x, ITEM_BOXES[3].y)
+            // pineappleFactory(this, ITEM_BOXES[4].x, ITEM_BOXES[4].y)
         fruitSpawnerFactory(this)
         playerFactory(this)
         this.setupControls()
@@ -1077,16 +1085,16 @@ class RanchScene {
         }
         if (this.currentAlot) {
             drawWhiteText(this.context, this.currentAlot.name, WIDTH - 32 - (this.currentAlot.name.length / 2 * 8), 4)
-            // this.context.fillStyle = 'green'
-            // this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
-            // this.context.fillStyle = 'red'
-            // this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
-            // this.context.fillStyle = 'blue'
-            // this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
-            // this.context.fillStyle = 'pink'
-            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
-            // this.context.fillStyle = 'purple'
-            // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
+                // this.context.fillStyle = 'green'
+                // this.context.fillRect(WIDTH - 60, 16, 4 * this.currentAlot.speed.natural, 4)
+                // this.context.fillStyle = 'red'
+                // this.context.fillRect(WIDTH - 60, 24, 4 * this.currentAlot.endurance.natural, 4)
+                // this.context.fillStyle = 'blue'
+                // this.context.fillRect(WIDTH - 60, 32, 4 * this.currentAlot.focus.natural, 4)
+                // this.context.fillStyle = 'pink'
+                // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural + this.currentAlot.spunk.bonus, 4)
+                // this.context.fillStyle = 'purple'
+                // this.context.fillRect(WIDTH - 60, 40, 4 * this.currentAlot.spunk.natural, 4)
 
             if (this.selectedAlots[0]) {
                 this.context.fillStyle = 'white'
