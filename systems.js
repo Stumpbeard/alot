@@ -57,7 +57,7 @@ let AlotAISystem = (scene) => {
             let roll = Math.floor(Math.random() * 5)
             switch (roll) {
                 case 4:
-                    let x = Math.floor(Math.random() * (scene.w - 32))
+                    let x = Math.floor(Math.random() * (scene.w - 64 - 32))
                     let y = Math.floor(Math.random() * (scene.h - 32))
                     target(ent, x, y)
                     break
@@ -135,46 +135,57 @@ let AlotAISystem = (scene) => {
 
         // Reenter the world bounds
         if (entPosition.x < 0) entPosition.x = 0
-        if (entPosition.x > scene.w - 32) entPosition.x = scene.w - 32
+        if (entPosition.x > scene.w - 64 - 32) entPosition.x = scene.w - 64 - 32
         if (entPosition.y < 0) entPosition.y = 0
         if (entPosition.y > scene.h - 32) entPosition.y = scene.h - 32
     })
 }
 
 let AlotInputSystem = (scene) => {
-    scene.world.forEach(ent => {
-        let entImage = Sprite.get(ent)
-        if (!entImage || !entImage.image.includes('Alot')) return
-
-        let entPosition = Position.get(ent)
-        EVENT_QUEUE.forEach(ev => {
-            let mousePos = { x: ev.localX, y: ev.localY }
-            switch (ev.type) {
-                case 'mousedown':
-                    if (isInsideBox(mousePos, entPosition, 32)) {
+    EVENT_QUEUE.forEach(ev => {
+        let mousePos = { x: ev.localX, y: ev.localY }
+        switch (ev.type) {
+            case 'mousedown':
+                let alots = []
+                let selectedCount = 0
+                scene.world.forEach(ent => {
+                    let entImage = Sprite.get(ent)
+                    if (entImage && entImage.image.includes('Alot')) {
                         let entState = State.get(ent)
-                        entState.selected = !entState.selected
+                        if (entState.selected) { selectedCount++ }
+                        let entPosition = Position.get(ent)
+                        if (isInsideBox(mousePos, entPosition, 32)) {
+                            alots.push({ position: entPosition, state: entState })
+                        }
                     }
-                    break
-            }
-        })
+                })
+                if (alots.length > 0) {
+                    let topState = alots.sort(findOnTop).reverse()[0].state
+                    if (!topState.selected && selectedCount < 2) {
+                        topState.selected = true
+                    } else {
+                        topState.selected = false
+                    }
+                }
+                break
+        }
     })
 }
 
-let StateSystem = (scene) => {
-    // Only one selected
-    let selecteds = []
-    scene.world.forEach(ent => {
-        let entPosition = Position.get(ent)
-        let entState = State.get(ent)
-        if (!entPosition || !entState || !entState.selected) return
+// let StateSystem = (scene) => {
+//     // Only one selected
+//     let selecteds = []
+//     scene.world.forEach(ent => {
+//         let entPosition = Position.get(ent)
+//         let entState = State.get(ent)
+//         if (!entPosition || !entState || !entState.selected) return
 
-        selecteds.push({ position: entPosition, state: entState })
-        entState.selected = false
-    })
-    selecteds.sort(findOnTop).reverse()
-    if (selecteds.length > 0) selecteds[0].state.selected = true
-}
+//         selecteds.push({ position: entPosition, state: entState })
+//         entState.selected = false
+//     })
+//     selecteds.sort(findOnTop).reverse()
+//     if (selecteds.length > 0) selecteds[0].state.selected = true
+// }
 
 let RenderSystem = (scene) => {
     if (document.body.clientHeight >= document.body.clientWidth) {
@@ -228,4 +239,50 @@ let AnimationSystem = (scene) => {
             animation.currentFrame = 0
         }
     })
+}
+
+let MenuAlotSelectionSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let selectedAlots = SelectedAlots.get(ent)
+        if (!selectedAlots) return
+        scene.world.forEach(ent => {
+            let entImage = Sprite.get(ent)
+            if (!entImage || !entImage.image.includes('Alot')) return
+            let entState = State.get(ent)
+            if (entState.selected && !selectedAlots.includes(ent)) {
+                selectedAlots.push(ent)
+            } else if (!entState.selected && selectedAlots.includes(ent)) {
+                selectedAlots.splice(selectedAlots.indexOf(ent), 1)
+            }
+        })
+    })
+}
+
+let ComposeMenuSystem = (scene) => {
+    if (!images['sideMenu']) {
+        images['sideMenu'] = document.createElement('canvas')
+        images['sideMenu'].width = 64
+        images['sideMenu'].height = HEIGHT
+    }
+    let context = images['sideMenu'].getContext('2d')
+    context.clearRect(0, 0, 64, HEIGHT)
+    context.fillStyle = 'black'
+    context.fillRect(0, 0, 64, HEIGHT)
+
+    // Find selected alots
+    let selectedAlots = undefined
+    scene.world.forEach(ent => {
+        if (selectedAlots) return
+        selectedAlots = SelectedAlots.get(ent)
+    })
+    let name1 = Attributes.get(selectedAlots[0])
+    if (name1) {
+        name1 = name1.name
+        drawWhiteText(context, name1, 8, 8)
+    }
+    let name2 = Attributes.get(selectedAlots[1])
+    if (name2) {
+        name2 = name2.name
+        drawWhiteText(context, name2, 8, HEIGHT - 16)
+    }
 }

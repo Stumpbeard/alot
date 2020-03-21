@@ -1,24 +1,34 @@
 let Component = Map;
 
-let Position = new Component()
-let Target = new Component()
-let Sprite = new Component()
-let Animation = new Component()
-let AI = new Component()
-let Attributes = new Component()
-let Status = new Component()
-let InputHandler = new Component()
-let State = new Component()
-let Anchor = new Component()
-let Bonus = new Component()
-let Timer = new Component()
-let Genetics = new Component()
+var Position = new Component()
+var Target = new Component()
+var Sprite = new Component()
+var Animation = new Component()
+var AI = new Component()
+var Attributes = new Component()
+var Status = new Component()
+var InputHandler = new Component()
+var State = new Component()
+var Anchor = new Component()
+var Bonus = new Component()
+var Timer = new Component()
+var Genetics = new Component()
+var SelectedAlots = new Component()
 
-let components = [Position, Target, Sprite, Animation, AI, Attributes, Status, InputHandler, State, Anchor, Bonus, Timer, Genetics]
 let removeEntity = (ent) => {
+    let components = []
+    for (let key in window) {
+        if (window[key] instanceof Component) {
+            components.push(window[key])
+        }
+    }
     components.forEach(component => {
         component.delete(ent)
     });
+}
+
+let selectedAlots = (ent) => {
+    SelectedAlots.set(ent, [])
 }
 
 let position = (entity, x, y, z) => {

@@ -1,2 +1,18 @@
-control management needs to be own entity instead of in the AI for Alots
-menu should be an entity as well
+entities:
+    cursor - this is a non factor, may as well just be a graphical replacement
+    alot
+    baby alot
+    eggplant
+
+input:
+    mousedown
+    mouseup
+    mousemove
+
+interactions
+    alot x eggplant
+        eggplant dropped on alot
+            eggplant = DESTROYED
+            alot = HORNY
+    alot x alot
+        

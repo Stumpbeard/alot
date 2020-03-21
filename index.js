@@ -179,7 +179,7 @@ let getTopGeneticColor = (geneticsProfile) => {
 }
 
 let randomXY = (scene) => [
-    Math.floor(Math.random() * scene.w),
+    Math.floor(Math.random() * (scene.w - 96)),
     Math.floor(Math.random() * scene.h)
 ]
 
@@ -820,8 +820,9 @@ class RanchScene {
         TimerSystem(this)
         CursorInputSystem(this)
         AlotInputSystem(this)
-        StateSystem(this)
         AlotAISystem(this)
+        MenuAlotSelectionSystem(this)
+        ComposeMenuSystem(this)
         RenderSystem(this)
         AnimationSystem(this)
         EVENT_QUEUE = []
@@ -829,7 +830,9 @@ class RanchScene {
 
     initializeEnts() {
         bgRanchFactory(this)
+        sideMenuFactory(this)
         cursorFactory(this)
+        alotFactory(this)
         alotFactory(this)
         alotFactory(this)
     }
