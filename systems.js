@@ -172,21 +172,6 @@ let AlotInputSystem = (scene) => {
     })
 }
 
-// let StateSystem = (scene) => {
-//     // Only one selected
-//     let selecteds = []
-//     scene.world.forEach(ent => {
-//         let entPosition = Position.get(ent)
-//         let entState = State.get(ent)
-//         if (!entPosition || !entState || !entState.selected) return
-
-//         selecteds.push({ position: entPosition, state: entState })
-//         entState.selected = false
-//     })
-//     selecteds.sort(findOnTop).reverse()
-//     if (selecteds.length > 0) selecteds[0].state.selected = true
-// }
-
 let RenderSystem = (scene) => {
     if (document.body.clientHeight >= document.body.clientWidth) {
         scene.canvas.style = `width: ${WIDTH * SCALE}px; max-width: 100%;`
