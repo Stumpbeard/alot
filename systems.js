@@ -29,7 +29,7 @@ let CursorInputSystem = (scene) => {
                     entPosition.x = ev.localX
                     entPosition.y = ev.localY
                     break
-                case 'mouseup':
+                case 'mousedown':
                     clickSound.play()
                     break
             }
