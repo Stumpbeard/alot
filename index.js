@@ -40,28 +40,6 @@ let bgDigFactory = (scene) => {
     return ent
 }
 
-let statusHornyFactory = (scene, targetEnt) => {
-    let ent = Entity()
-
-    let statusAI = () => {
-        let entTarget = Target.get(ent)
-        let targetPos = Position.get(entTarget.ent)
-        let entPos = Position.get(ent)
-        entPos.x = targetPos.x + 3
-        entPos.y = targetPos.y
-    }
-
-    let targetPos = Position.get(targetEnt)
-
-    image(ent, 'statusHorny')
-    position(ent, targetPos.x + 3, targetPos.y)
-    target(ent, undefined, undefined, targetEnt)
-    ai(ent, statusAI)
-    scene.world.add(ent)
-
-    return ent
-}
-
 let fruitSpawnerFactory = (scene) => {
     let ent = Entity()
 
@@ -825,6 +803,7 @@ class RanchScene {
         ItemSpawnerAISystem(this)
         MenuAlotSelectionSystem(this)
         MenuMateModeSystem(this)
+        EntitySortingSystem(this)
         ComposeMenuSystem(this)
         RenderSystem(this)
         AnimationSystem(this)

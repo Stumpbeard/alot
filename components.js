@@ -85,8 +85,8 @@ let state = (entity, state) => {
     State.set(entity, state)
 }
 
-let anchor = (entity, x, y) => {
-    Anchor.set(entity, { x: x, y: y })
+let anchor = (entity, ent, offsetX, offsetY) => {
+    Anchor.set(entity, { ent: ent, x: offsetX, y: offsetY })
 }
 
 let bonus = (entity, status, attributes) => {

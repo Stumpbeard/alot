@@ -331,6 +331,10 @@ let ItemSpawnerAISystem = (scene) => {
     })
 }
 
+let AlotItemFeedingSyste = (scene) => {
+    ent
+}
+
 let ItemInputSystem = (scene) => {
     scene.world.forEach(ent => {
         let entType = EntityType.get(ent)
@@ -360,4 +364,47 @@ let ItemInputSystem = (scene) => {
             }
         })
     })
+}
+
+let AnchorSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entAnchor = Anchor.get(ent)
+        if (!entAnchor) return
+
+        let anchorPosition = Position.get(entAnchor.ent)
+        let entPosition = Position.get(ent)
+        entPosition.x = anchorPosition.x + entAnchor.x
+        entPosition.y = anchorPosition.y + entAnchor.y
+    })
+}
+
+let EntitySortingSystem = (scene) => {
+    let world = scene.world
+
+    let entSorter = (a, b) => {
+        let aPos = Position.get(a)
+        let bPos = Position.get(b)
+        if (aPos && !bPos) {
+            return -1
+        } else if (bPos && !aPos) {
+            return 1
+        } else if (!aPos && !bPos) {
+            return 0
+        } else {
+            if (aPos.z < bPos.z) {
+                return -1
+            } else if (aPos.z > bPos.z) {
+                return 1
+            } else {
+                if (aPos.y < bPos.y) {
+                    return -1
+                } else if (aPos.y > bPos.y) {
+                    return 1
+                } else {
+                    return 0
+                }
+            }
+        }
+    }
+    world.sort(entSorter)
 }

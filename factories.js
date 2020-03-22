@@ -72,3 +72,16 @@ let eggplantFactory = (scene, x, y) => {
 
     return ent
 }
+
+let statusHornyFactory = (scene, anchorEnt) => {
+    let ent = Entity()
+
+    let anchorPos = Position.get(anchorEnt)
+
+    image(ent, 'statusHorny')
+    position(ent, anchorPos.x + 3, anchorPos.y)
+    anchor(ent, anchorEnt, 3, 0)
+    scene.world.add(ent)
+
+    return ent
+}
