@@ -355,6 +355,7 @@ let AlotItemFeedingSyste = (scene) => {
 
                 let droppedPos = Position.get(droppedEnt)
                 if (isColliding(entPosition, droppedPos, 8, 32)) {
+                    statusHornyFactory(scene, droppedEnt)
                     removeEntity(ent)
                 }
             })
