@@ -406,5 +406,5 @@ let EntitySortingSystem = (scene) => {
             }
         }
     }
-    scene.world = new Set([...world].sort(entSorter))
+    scene.world = world.sort(entSorter)
 }
