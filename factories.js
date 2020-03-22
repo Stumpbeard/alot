@@ -3,7 +3,7 @@ let cursorFactory = (scene) => {
 
     image(ent, 'cursor')
     position(ent, 0, 0, 99)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -13,7 +13,7 @@ let bgRanchFactory = (scene) => {
 
     position(ent, 0, 0, 0)
     image(ent, 'bgRanch')
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -24,7 +24,7 @@ let sideMenuFactory = (scene) => {
     position(ent, WIDTH - 64, 0, 3)
     image(ent, 'sideMenu')
     selectedAlots(ent)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -46,7 +46,7 @@ let buttonFactory = (scene, x, y, text) => {
     position(ent, x, y, 4)
     image(ent, 'menuButton' + text)
     buttonText(ent, text)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -56,7 +56,7 @@ let itemSpawnerFactory = (scene) => {
 
     timer(ent, 0)
     entityType(ent, 'ItemSpawner')
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -68,7 +68,7 @@ let eggplantFactory = (scene, x, y) => {
     image(ent, 'foodEggplant')
     entityType(ent, 'ItemEggplant')
     state(ent, {})
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -81,7 +81,7 @@ let statusHornyFactory = (scene, anchorEnt) => {
     image(ent, 'statusHorny')
     position(ent, anchorPos.x + 3, anchorPos.y)
     anchor(ent, anchorEnt, 3, 0)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }

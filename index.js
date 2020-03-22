@@ -26,7 +26,7 @@ let main = (timestamp) => {
 let uid = 0;
 
 let Entity = () => uid++;
-let Registry = Set;
+let Registry = Array;
 
 
 // Entity factories
@@ -35,7 +35,7 @@ let bgDigFactory = (scene) => {
 
     position(ent, 0, 0)
     image(ent, 'bgDig')
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -62,7 +62,7 @@ let fruitSpawnerFactory = (scene) => {
 
     ai(ent, spawnerAI)
     timer(ent, 15000)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -406,7 +406,7 @@ let alotFactory = (scene, attr, x, y, geneticsProfile) => {
     state(ent, {})
     timer(ent, 1000 * Math.floor(Math.random() * 5 + 1))
     genetics(ent, geneticsProfile)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -494,7 +494,7 @@ let babyAlotFactory = (scene, x, y, geneticsProfile) => {
     animation(ent, 'idle', 500)
     genetics(ent, geneticsProfile)
     timer(ent, 60000)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -636,7 +636,7 @@ let itemFactory = (scene, graphic, x, y, bonuses) => {
     image(ent, graphic)
     anchor(ent, x, y)
     bonus(ent, bonuses.status, bonuses.attributes)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
@@ -741,7 +741,7 @@ let playerFactory = (scene) => {
 
     parentScene(ent, scene)
     inputHandler(ent, handler)
-    scene.world.add(ent)
+    scene.world.push(ent)
 
     return ent
 }
