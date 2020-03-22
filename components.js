@@ -15,6 +15,7 @@ var Timer = new Component()
 var Genetics = new Component()
 var SelectedAlots = new Component()
 var ButtonText = new Component()
+var EntityType = new Component()
 
 let removeEntity = (ent) => {
     let components = []
@@ -94,4 +95,8 @@ let bonus = (entity, status, attributes) => {
 
 let timer = (entity, timer) => {
     Timer.set(entity, { timer: timer })
+}
+
+let entityType = (entity, type) => {
+    EntityType.set(entity, { type: type })
 }

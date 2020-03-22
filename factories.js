@@ -50,3 +50,25 @@ let buttonFactory = (scene, x, y, text) => {
 
     return ent
 }
+
+let itemSpawnerFactory = (scene) => {
+    let ent = Entity()
+
+    timer(ent, 0)
+    entityType(ent, 'ItemSpawner')
+    scene.world.add(ent)
+
+    return ent
+}
+
+let eggplantFactory = (scene, x, y) => {
+    let ent = Entity()
+
+    position(ent, x, y, 1)
+    image(ent, 'foodEggplant')
+    entityType(ent, 'ItemEggplant')
+    state(ent, {})
+    scene.world.add(ent)
+
+    return ent
+}

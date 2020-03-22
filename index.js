@@ -673,13 +673,13 @@ let pineappleFactory = (scene, x, y) => {
     return itemFactory(scene, 'foodPineapple', x, y, bonus)
 }
 
-let eggplantFactory = (scene, x, y) => {
-    const bonus = {
-        status: ['horny']
-    }
+// let eggplantFactory = (scene, x, y) => {
+//     const bonus = {
+//         status: ['horny']
+//     }
 
-    return itemFactory(scene, 'foodEggplant', x, y, bonus)
-}
+//     return itemFactory(scene, 'foodEggplant', x, y, bonus)
+// }
 
 let playerFactory = (scene) => {
     let ent = Entity()
@@ -820,7 +820,9 @@ class RanchScene {
         TimerSystem(this)
         CursorInputSystem(this)
         AlotInputSystem(this)
+        ItemInputSystem(this)
         AlotAISystem(this)
+        ItemSpawnerAISystem(this)
         MenuAlotSelectionSystem(this)
         MenuMateModeSystem(this)
         ComposeMenuSystem(this)
@@ -830,6 +832,7 @@ class RanchScene {
     }
 
     initializeEnts() {
+        itemSpawnerFactory(this)
         bgRanchFactory(this)
         sideMenuFactory(this)
         cursorFactory(this)

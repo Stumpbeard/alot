@@ -308,3 +308,56 @@ let MenuMateModeSystem = (scene) => {
         }
     })
 }
+
+let ItemSpawnerAISystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entType = EntityType.get(ent)
+        if (!entType || entType.type !== 'ItemSpawner') return
+
+        let entTimer = Timer.get(ent)
+        if (entTimer.timer <= 0) {
+            timer(ent, 15000)
+            let eggplantCount = 0
+            scene.world.forEach(ent => {
+                let entType = EntityType.get(ent)
+                if (entType && entType.type.includes('Item')) eggplantCount++
+            })
+            if (eggplantCount < 5) {
+                let x = Math.floor(Math.random() * (WIDTH - 64 - 8))
+                let y = Math.floor(Math.random() * (HEIGHT - 8))
+                eggplantFactory(scene, x, y)
+            }
+        }
+    })
+}
+
+let ItemInputSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entType = EntityType.get(ent)
+        if (!entType || !entType.type.includes('Item') || entType.type.includes('Spawner')) return
+
+        let entPosition = Position.get(ent)
+        let entState = State.get(ent)
+        EVENT_QUEUE.forEach(ev => {
+            let mousePos = { x: ev.localX, y: ev.localY }
+            switch (ev.type) {
+                case 'mousedown':
+                    if (isInsideBox(mousePos, entPosition, 8)) {
+                        if (!entState.held) {
+                            entState.held = true
+                            position(ent, mousePos.x - 4, mousePos.y - 4)
+                        }
+                    }
+                    break
+                case 'mouseup':
+                    entState.held = false
+                    break
+                case 'mousemove':
+                    if (entState.held) {
+                        position(ent, mousePos.x - 4, mousePos.y - 4)
+                    }
+                    break
+            }
+        })
+    })
+}
