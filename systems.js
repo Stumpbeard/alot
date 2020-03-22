@@ -15,6 +15,16 @@ let findOnTop = (a, b) =>
     ((a.position.z > b.position.z) ? true :
         (a.position.y - b.position.y))
 
+let isColliding = (a, b, aD, bD) => {
+    if (a.x < b.x + bD &&
+        a.x + aD > b.x &&
+        a.y < b.y + bD &&
+        a.y + aD > b.y) {
+        return true
+    }
+    return false
+}
+
 // SYSTEMS
 
 let CursorInputSystem = (scene) => {
@@ -320,7 +330,7 @@ let ItemSpawnerAISystem = (scene) => {
             let eggplantCount = 0
             scene.world.forEach(ent => {
                 let entType = EntityType.get(ent)
-                if (entType && entType.type.includes('Item')) eggplantCount++
+                if (entType && entType.type.includes('Consumable')) eggplantCount++
             })
             if (eggplantCount < 5) {
                 let x = Math.floor(Math.random() * (WIDTH - 64 - 8))
@@ -332,13 +342,31 @@ let ItemSpawnerAISystem = (scene) => {
 }
 
 let AlotItemFeedingSyste = (scene) => {
-    ent
+    scene.world.forEach(ent => {
+        let entType = EntityType.get(ent)
+        if (!entType || !entType.type.includes('Consumable')) return
+
+        let entState = State.get(ent)
+        let entPosition = Position.get(ent)
+        if (entState.dropped) {
+            [...scene.world].reverse().forEach(droppedEnt => {
+                let droppedType = EntityType.get(droppedEnt)
+                if (!droppedType || !droppedType.type.includes('Alot')) return
+
+                let droppedPos = Position.get(droppedEnt)
+                if (isColliding(entPosition, droppedPos, 8, 32)) {
+                    removeEntity(ent)
+                }
+            })
+            entState.dropped = false
+        }
+    })
 }
 
 let ItemInputSystem = (scene) => {
     scene.world.forEach(ent => {
         let entType = EntityType.get(ent)
-        if (!entType || !entType.type.includes('Item') || entType.type.includes('Spawner')) return
+        if (!entType || !entType.type.includes('Consumable')) return
 
         let entPosition = Position.get(ent)
         let entState = State.get(ent)
@@ -354,7 +382,10 @@ let ItemInputSystem = (scene) => {
                     }
                     break
                 case 'mouseup':
-                    entState.held = false
+                    if (entState.held) {
+                        entState.dropped = true
+                    }
+                    entState.held = false;
                     break
                 case 'mousemove':
                     if (entState.held) {

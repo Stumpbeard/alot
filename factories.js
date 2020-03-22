@@ -30,7 +30,6 @@ let sideMenuFactory = (scene) => {
 }
 
 let buttonFactory = (scene, x, y, text) => {
-    console.log('this happened')
     let ent = Entity()
 
     if (!images['menuButton' + text]) {
@@ -66,7 +65,7 @@ let eggplantFactory = (scene, x, y) => {
 
     position(ent, x, y, 1)
     image(ent, 'foodEggplant')
-    entityType(ent, 'ItemEggplant')
+    entityType(ent, 'ConsumableEggplant')
     state(ent, {})
     scene.world.push(ent)
 
