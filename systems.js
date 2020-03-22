@@ -270,4 +270,41 @@ let ComposeMenuSystem = (scene) => {
         name2 = name2.name
         drawWhiteText(context, name2, 8, HEIGHT - 16)
     }
+
+    // Button dressing
+    if (selectedAlots.length === 2) {
+        context.fillStyle = 'white'
+        context.fillRect(12, 20, 2, 92)
+        context.fillRect(12, HEIGHT / 2 + 8, 2, 92)
+    }
+}
+
+let MenuMateModeSystem = (scene) => {
+    scene.world.forEach(ent => {
+        let entImage = Sprite.get(ent)
+        if (!entImage || entImage.image !== 'sideMenu') return
+
+        let entSelectedAlots = SelectedAlots.get(ent)
+
+        if (entSelectedAlots.length === 2) {
+            let mateButton = false
+            for (let i = 0; i < scene.world.length; ++i) {
+                let entButtonText = ButtonText.get(scene.world[i])
+                if (entButtonText && entButtonText.text === 'MATE') {
+                    mateButton = true
+                    break
+                }
+            }
+            if (!mateButton) {
+                buttonFactory(scene, WIDTH - 64 + 4, HEIGHT / 2 - 4, 'MATE')
+            }
+        } else {
+            scene.world.forEach(ent => {
+                let entButtonText = ButtonText.get(ent)
+                if (entButtonText && entButtonText.text === 'MATE') {
+                    removeEntity(ent)
+                }
+            })
+        }
+    })
 }

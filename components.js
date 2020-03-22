@@ -14,6 +14,7 @@ var Bonus = new Component()
 var Timer = new Component()
 var Genetics = new Component()
 var SelectedAlots = new Component()
+var ButtonText = new Component()
 
 let removeEntity = (ent) => {
     let components = []
@@ -25,6 +26,10 @@ let removeEntity = (ent) => {
     components.forEach(component => {
         component.delete(ent)
     });
+}
+
+let buttonText = (ent, text) => {
+    ButtonText.set(ent, { text: text.toUpperCase() })
 }
 
 let selectedAlots = (ent) => {

@@ -822,6 +822,7 @@ class RanchScene {
         AlotInputSystem(this)
         AlotAISystem(this)
         MenuAlotSelectionSystem(this)
+        MenuMateModeSystem(this)
         ComposeMenuSystem(this)
         RenderSystem(this)
         AnimationSystem(this)

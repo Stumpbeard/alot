@@ -92,3 +92,7 @@ images['titleScreen'] = titleScreenImage
 let cursorImage = new Image()
 cursorImage.src = 'images/cursor-default.png'
 images['cursor'] = cursorImage
+
+let menuButton = new Image()
+menuButton.src = 'images/menu-button.png'
+images['menuButton'] = menuButton
