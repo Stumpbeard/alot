@@ -229,6 +229,8 @@ let SystemBoundsFixer = (scene) => {
     let ents = fetchEnts(scene, 'Position')
     ents.forEach(entity => {
         let position = entity.Position
+        let isPlayer = IsPlayer.get(entity.ent)
+        if (isPlayer) return
 
         if (position.x < 0) position.x = 0
         if (position.x >= scene.w - position.w) position.x = scene.w - position.w
