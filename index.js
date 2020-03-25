@@ -70,6 +70,7 @@ class RanchScene {
         SystemAlotBabyAI(this)
         SystemItemSpawnerAI(this)
         SystemIcons(this)
+        SystemBoundsFixer(this)
         SystemRender(this)
         SystemAnimation(this)
     }

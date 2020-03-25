@@ -213,8 +213,8 @@ let SystemAlotAI = (scene) => {
         } else {
             let roll = Math.floor(Math.random() * 3)
             if (roll === 2) {
-                let randomX = Math.floor(Math.random() * scene.w)
-                let randomY = Math.floor(Math.random() * scene.h)
+                let randomX = Math.floor(Math.random() * (scene.w - position.w))
+                let randomY = Math.floor(Math.random() * (scene.h - position.h))
                 let loc = { x: randomX, y: randomY }
                 addTarget(ent, 'wander', loc)
             } else {
@@ -225,7 +225,19 @@ let SystemAlotAI = (scene) => {
     })
 }
 
-SystemAlotBabyAI = (scene) => {
+let SystemBoundsFixer = (scene) => {
+    let ents = fetchEnts(scene, 'Position')
+    ents.forEach(entity => {
+        let position = entity.Position
+
+        if (position.x < 0) position.x = 0
+        if (position.x >= scene.w - position.w) position.x = scene.w - position.w
+        if (position.y < 0) position.y = 0
+        if (position.y >= scene.h - position.h) position.y = scene.h - position.h
+    });
+}
+
+let SystemAlotBabyAI = (scene) => {
     let ents = fetchEnts(scene, 'Genetics', 'Timer', 'Position', 'Speed')
     ents.forEach(entity => {
         let timer = entity.Timer
@@ -239,7 +251,7 @@ SystemAlotBabyAI = (scene) => {
     });
 }
 
-SystemIcons = (scene) => {
+let SystemIcons = (scene) => {
     let ents = fetchEnts(scene, 'Position', 'Target')
     ents.forEach(entity => {
         let target = entity.Target
