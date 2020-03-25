@@ -1,86 +1,92 @@
-let cursorFactory = (scene) => {
-    let ent = Entity()
+// HELPERS
 
-    image(ent, 'cursor')
-    position(ent, 0, 0, 99)
-    scene.world.push(ent)
+let colorDeterminer = (genes) => {
+    let red = (genes.red === 'RR')
+    let blue = (genes.blue === 'BB')
+    let yellow = (genes.yellow === 'YY')
 
-    return ent
-}
-
-let bgRanchFactory = (scene) => {
-    let ent = Entity()
-
-    position(ent, 0, 0, 0)
-    image(ent, 'bgRanch')
-    scene.world.push(ent)
-
-    return ent
-}
-
-let sideMenuFactory = (scene) => {
-    let ent = Entity()
-
-    position(ent, WIDTH - 64, 0, 3)
-    image(ent, 'sideMenu')
-    selectedAlots(ent)
-    scene.world.push(ent)
-
-    return ent
-}
-
-let buttonFactory = (scene, x, y, text) => {
-    let ent = Entity()
-
-    if (!images['menuButton' + text]) {
-        let canvas = document.createElement('canvas')
-        canvas.width = 56
-        canvas.height = 8
-        let context = canvas.getContext('2d')
-        context.drawImage(images['menuButton'], 0, 0)
-        drawWhiteText(context, text, 28 - (4 * (text.length)), 0)
-        images['menuButton' + text] = canvas
+    if (red && !blue && !yellow) {
+        return 'red'
+    } else if (!red && blue && !yellow) {
+        return 'blue'
+    } else if (red && !blue && yellow) {
+        return 'yellow'
+    } else if (red && blue && !yellow) {
+        return 'purple'
+    } else if (red && !blue && yellow) {
+        return 'pink'
+    } else if (!red && blue && yellow) {
+        return 'green'
+    } else {
+        return 'brown'
     }
-
-    position(ent, x, y, 4)
-    image(ent, 'menuButton' + text)
-    buttonText(ent, text)
-    scene.world.push(ent)
-
-    return ent
 }
 
-let itemSpawnerFactory = (scene) => {
+// FACTORIES
+
+let EntityAlot = (scene, x, y, spd, genes) => {
     let ent = Entity()
 
-    timer(ent, 0)
-    entityType(ent, 'ItemSpawner')
-    scene.world.push(ent)
+    ComponentPosition(ent, x, y, 0, 32, 32)
+    ComponentAnimation(ent, 'idle', 500)
+    ComponentTarget(ent)
+    ComponentTimer(ent)
+    ComponentHorny(ent)
+    ComponentSpeed(ent, spd)
+    ComponentSelected(ent)
+    ComponentGenetics(ent, genes)
+    ComponentSprite(ent, colorDeterminer(genes) + 'Alot')
 
-    return ent
+    scene.world.push(ent)
 }
 
-let eggplantFactory = (scene, x, y) => {
+let EntityBabyAlot = (scene, x, y, spd, genes) => {
     let ent = Entity()
 
-    position(ent, x, y, 1)
-    image(ent, 'foodEggplant')
-    entityType(ent, 'ConsumableEggplant')
-    state(ent, {})
-    scene.world.push(ent)
+    ComponentPosition(ent, x, y, 0, 32, 32)
+    ComponentAnimation(ent, 'idle', 500)
+    ComponentTimer(ent, { growup: 60000 })
+    ComponentSpeed(ent, spd)
+    ComponentGenetics(ent, genes)
+    ComponentSprite(ent, colorDeterminer(genes) + 'BabyAlot')
 
-    return ent
+    scene.world.push(ent)
 }
 
-let statusHornyFactory = (scene, anchorEnt) => {
+let EntityEggplant = (scene, x, y) => {
     let ent = Entity()
 
-    let anchorPos = Position.get(anchorEnt)
+    ComponentPosition(ent, x, y, 1, 8, 8)
+    ComponentSprite(ent, 'foodEggplant')
+    ComponentHeld(ent)
 
-    image(ent, 'statusHorny')
-    position(ent, anchorPos.x + 3, anchorPos.y)
-    anchor(ent, anchorEnt, 3, 0)
     scene.world.push(ent)
+}
 
-    return ent
+let EntityItemSpawner = (scene) => {
+    let ent = Entity()
+
+    ComponentTimer(ent, { itemSpawn: 15000 })
+
+    scene.world.push(ent)
+}
+
+let EntityHeartStatus = (scene, target) => {
+    let ent = Entity()
+
+    ComponentPosition(ent, target.x, target.y, 0, 8, 8)
+    ComponentTarget(ent, { aboveHead: target })
+    ComponentSprite(ent, 'statusHorny')
+
+    scene.world.push(ent)
+}
+
+let EntityCursor = (scene) => {
+    let ent = Entity()
+
+    ComponentPosition(ent, 0, 0, 900, 8, 8)
+    ComponentIsPlayer(ent)
+    ComponentSprite(ent, 'cursor')
+
+    scene.world.push(ent)
 }

@@ -1,21 +1,4 @@
-let Component = Map;
-
-var Position = new Component()
-var Target = new Component()
-var Sprite = new Component()
-var Animation = new Component()
-var AI = new Component()
-var Attributes = new Component()
-var Status = new Component()
-var InputHandler = new Component()
-var State = new Component()
-var Anchor = new Component()
-var Bonus = new Component()
-var Timer = new Component()
-var Genetics = new Component()
-var SelectedAlots = new Component()
-var ButtonText = new Component()
-var EntityType = new Component()
+let Component = Map
 
 let removeEntity = (ent) => {
     let components = []
@@ -29,74 +12,107 @@ let removeEntity = (ent) => {
     });
 }
 
-let buttonText = (ent, text) => {
-    ButtonText.set(ent, { text: text.toUpperCase() })
+var Position = new Component()
+
+let ComponentPosition = (entity, x = 0, y = 0, z = 0, h = 0, w = 0) => {
+    Position.set(entity, { x: x, y: y, z: z, w: w, h: h })
 }
 
-let selectedAlots = (ent) => {
-    SelectedAlots.set(ent, [])
+var Target = new Component()
+
+let ComponentTarget = (entity, targets = {}) => {
+    Target.set(entity, targets)
 }
 
-let position = (entity, x, y, z) => {
-    Position.set(entity, { x: x, y: y, z: z })
+let addTarget = (ent1, type, ent2) => {
+    let target = Target.get(ent1)
+    if (target) {
+        target[type] = ent2
+    }
 }
 
-let target = (entity, x, y, ent) => {
-    Target.set(entity, { x: x, y: y, ent: ent })
+let deleteTarget = (ent, type) => {
+    let target = Target.get(ent)
+    if (target) {
+        target[type] = null
+    }
 }
 
-let image = (entity, image) => {
-    Sprite.set(entity, { image: image })
+var Timer = new Component()
+
+let ComponentTimer = (ent, types = {}) => {
+    Timer.set(ent, types)
 }
 
-let animation = (entity, animation, rate) => {
-    let randomTimerStart = Math.floor(Math.random() * rate / 2)
-    Animation.set(entity, { animation: animation, rate: rate, timer: randomTimerStart, currentFrame: 0 })
+let addTimer = (ent1, type, countdown, reset) => {
+    let timers = Timer.get(ent1)
+    if (timers) {
+        if (!timers[type] || reset) {
+            timers[type] = countdown
+        }
+    }
 }
 
-let ai = (entity, ai) => {
-    AI.set(entity, { ai: ai })
+let deleteTimer = (ent, type) => {
+    let timers = Timer.get(ent)
+    if (timers) {
+        timers[type] = undefined
+    }
 }
 
-let attributes = (entity, name, spd, end, fcs, spk, sex) => {
-    Attributes.set(entity, {
-        name: name,
-        speed: { natural: spd, bonus: 0 },
-        endurance: { natural: end, bonus: 0 },
-        focus: { natural: fcs, bonus: 0 },
-        spunk: { natural: spk, bonus: 0 },
-        sex: sex
-    })
+var Sprite = new Component()
+
+let ComponentSprite = (entity, sprite) => {
+    Sprite.set(entity, { value: sprite })
 }
 
-let genetics = (entity, genetics) => {
-    Genetics.set(entity, genetics)
+var Animation = new Component()
+
+let ComponentAnimation = (entity, animation, rate = 0) => {
+    Animation.set(entity, { animation: animation, rate: rate, timer: 0, currentFrame: 0 })
 }
 
-let status = (entity) => {
-    Status.set(entity, { status: [] })
+let setAnimation = (entity, animation, rate = 0, reset = false) => {
+    let currentAnimation = Animation.get(entity)
+    if (currentAnimation.animation === animation && !reset) {
+        currentAnimation.rate = rate
+    } else {
+        Animation.set(entity, { animation: animation, rate: rate, timer: 0, currentFrame: 0 })
+    }
 }
 
-let inputHandler = (entity, handler) => {
-    InputHandler.set(entity, { handler: handler, keydown: { mouse1: false }, clickPos: { x: 0, y: 0 }, mousePos: { x: 0, y: 0 } })
+var Horny = new Component()
+
+let ComponentHorny = (ent, current = false) => {
+    Horny.set(ent, { value: current })
 }
 
-let state = (entity, state) => {
-    State.set(entity, state)
+var Selected = new Component()
+
+let ComponentSelected = (ent, current = false) => {
+    Selected.set(ent, { value: current })
 }
 
-let anchor = (entity, ent, offsetX, offsetY) => {
-    Anchor.set(entity, { ent: ent, x: offsetX, y: offsetY })
+var Held = new Component()
+
+let ComponentHeld = (ent, current = false) => {
+    Held.set(ent, { value: current })
 }
 
-let bonus = (entity, status, attributes) => {
-    Bonus.set(entity, { status: status, attributes: attributes })
+var IsPlayer = new Component()
+
+let ComponentIsPlayer = (ent, current = true) => {
+    IsPlayer.set(ent, { value: current })
 }
 
-let timer = (entity, timer) => {
-    Timer.set(entity, { timer: timer })
+var Speed = new Component()
+
+let ComponentSpeed = (ent, speed) => {
+    Speed.set(ent, { value: speed })
 }
 
-let entityType = (entity, type) => {
-    EntityType.set(entity, { type: type })
+var Genetics = new Component()
+
+let ComponentGenetics = (ent, genes) => {
+    Genetics.set(ent, genes)
 }
